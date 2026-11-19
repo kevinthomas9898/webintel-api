@@ -1,92 +1,237 @@
 "use client";
 
-import React from "react";
-import { Sparkles, Shield, Zap, CheckCircle2, ArrowRight, Bot } from "lucide-react";
+import React, { useState } from "react";
+import { Shield, ArrowRight, CornerDownRight } from "lucide-react";
+
+interface SimulatedTarget {
+  name: string;
+  url: string;
+  ip: string;
+  title: string;
+  h1: string;
+  tech: string[];
+  contact: string;
+  confidence: number;
+}
+
+const PREVIEWS: SimulatedTarget[] = [
+  {
+    name: "Stripe",
+    url: "https://stripe.com",
+    ip: "198.137.150.161",
+    title: "Financial infrastructure to grow your revenue",
+    h1: "Accept payments and manage money movement online",
+    tech: ["Next.js", "Tailwind CSS", "Stripe", "Cloudflare"],
+    contact: "/contact/sales",
+    confidence: 0.85,
+  },
+  {
+    name: "GitHub",
+    url: "https://github.com",
+    ip: "140.82.121.4",
+    title: "Where the world builds software",
+    h1: "The complete developer platform to build, scale, and deliver software",
+    tech: ["Ruby on Rails", "React", "Fastly", "Primer CSS"],
+    contact: "/contact",
+    confidence: 0.92,
+  },
+  {
+    name: "Hacker News",
+    url: "https://news.ycombinator.com",
+    ip: "209.216.230.207",
+    title: "Hacker News",
+    h1: "Submissions and Tech Discussion",
+    tech: ["Arc", "FreeBSD", "Custom CSS"],
+    contact: "hn@ycombinator.com",
+    confidence: 0.70,
+  },
+];
 
 export function Hero() {
+  const [selectedTarget, setSelectedTarget] = useState<SimulatedTarget>(PREVIEWS[0]);
+
   return (
-    <section className="relative overflow-hidden pt-12 pb-16 lg:pt-20 lg:pb-24 bg-gradient-to-b from-indigo-50/40 via-slate-50 to-slate-50 border-b border-slate-200/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="text-center max-w-3xl mx-auto space-y-6">
-          {/* Top Pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-indigo-100 shadow-xs text-xs font-medium text-slate-700">
-            <Bot className="w-3.5 h-3.5 text-indigo-600" />
-            <span>Built Specifically for AI Agents &amp; LLM Toolchains</span>
-            <span className="text-slate-300">|</span>
-            <span className="text-indigo-600 font-semibold">
-              v1.0 Live
-            </span>
-          </div>
-
-          {/* Main Title */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.15]">
-            Website Intelligence API{" "}
-            <span className="text-indigo-600">
-              for AI Agents
-            </span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            Give your autonomous agents instantaneous, factual context on any company or website.
-            Extract technology stacks, verified contact links, semantic headings, and business keywords
-            with zero fabrication and enterprise-grade SSRF defense.
-          </p>
-
-          {/* Action CTAs */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <a
-              href="#playground"
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-600/20 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 group"
-            >
-              <span>Try Interactive Playground</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            </a>
-            <a
-              href="#docs"
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-xs font-semibold text-sm transition-all flex items-center justify-center gap-2"
-            >
-              <span>View API Reference</span>
-              <span className="font-mono text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                POST /api/scan
+    <section className="relative pt-12 pb-16 lg:pt-20 lg:pb-24 border-b border-[#e2ded5] drafting-grid-subtle">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          
+          {/* Left Column: Bold Asymmetric Editorial Headline */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Architectural Spec Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#ece7dd] border border-[#dcd7cb] text-[11px] font-mono text-[#4b4f59]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#c2410c]" />
+              <span className="uppercase font-semibold tracking-wider text-[#0e1014]">
+                PROTOCOL: RECONNAISSANCE_LAYER
               </span>
-            </a>
+              <span className="text-[#a39e92]">/</span>
+              <span>ZERO_TRUST_SSRF</span>
+            </div>
+
+            {/* Asymmetric Typography */}
+            <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold tracking-tight text-[#0e1014] leading-[1.08]">
+              Autonomous Website Intelligence.{" "}
+              <span className="block font-serif italic font-normal text-[#c2410c]">
+                Engineered for AI Agents.
+              </span>
+            </h1>
+
+            {/* Editorial Description */}
+            <p className="text-sm sm:text-base text-[#4b4f59] leading-relaxed max-w-xl">
+              Autonomous agents waste 90% of their token context parsing unstructured HTML dumps.
+              WebIntel surgicalizes any public URL into structured, factual intelligence: verified technology
+              footprints, semantic headings, public emails, and Schema.org profiles—shielded behind
+              hardened socket IP pinning.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 font-mono text-xs">
+              <a
+                href="#playground"
+                className="px-5 py-3 rounded-md bg-[#0e1014] hover:bg-[#252830] text-[#f7f6f2] font-semibold transition-all flex items-center justify-center gap-2 shadow-xs group"
+              >
+                <span>OPEN_INSPECTION_DECK</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+              <a
+                href="#security"
+                className="px-5 py-3 rounded-md bg-[#ffffff] hover:bg-[#ece7dd] text-[#0e1014] border border-[#e2ded5] font-semibold transition-all flex items-center justify-center gap-2 shadow-2xs"
+              >
+                <span>INSPECT_SSRF_ARMOR</span>
+                <Shield className="w-3.5 h-3.5 text-[#047857]" />
+              </a>
+            </div>
+
+            {/* Live Instrument Readout Strip */}
+            <div className="pt-6 border-t border-[#e2ded5] grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono text-xs">
+              <div>
+                <span className="text-[10px] uppercase text-[#828794] block">DNS_RESOLVER</span>
+                <span className="font-semibold text-[#0e1014]">PINNED_SOCKET</span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase text-[#828794] block">MAX_DEPTH</span>
+                <span className="font-semibold text-[#0e1014]">1_PAGE_SAME_ORIGIN</span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase text-[#828794] block">SIZE_CEILING</span>
+                <span className="font-semibold text-[#0e1014]">2.5_MB_STREAM_CAP</span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase text-[#828794] block">EXTRACTION_CONFIDENCE</span>
+                <span className="font-semibold text-[#047857]">DETERMINISTIC</span>
+              </div>
+            </div>
           </div>
 
-          {/* Key Value Badges */}
-          <div className="pt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 max-w-4xl mx-auto text-left">
-            <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-xs hover:border-slate-300 transition-all">
-              <div className="flex items-center gap-2 text-emerald-600 mb-1.5">
-                <Shield className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">SSRF Protected</span>
+          {/* Right Column: Signature Interactive Agent Deconstruction Lens */}
+          <div className="lg:col-span-5">
+            <div className="rounded-xl bg-[#ffffff] border border-[#e2ded5] shadow-xs overflow-hidden">
+              {/* Terminal Title Bar */}
+              <div className="px-4 py-2.5 bg-[#f1ede4] border-b border-[#e2ded5] flex items-center justify-between font-mono text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#d5d1c6]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#d5d1c6]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#d5d1c6]" />
+                  </div>
+                  <span className="font-bold text-[#0e1014] ml-2 text-[11px]">
+                    AGENT_LENS: RECON_PREVIEW
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 text-[10px] text-[#047857] font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#047857] animate-pulse" />
+                  LIVE
+                </div>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">DNS pre-check, pinned IP socket &amp; RFC-1918 blocking</p>
-            </div>
 
-            <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-xs hover:border-slate-300 transition-all">
-              <div className="flex items-center gap-2 text-indigo-600 mb-1.5">
-                <CheckCircle2 className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">Zero Fabrication</span>
+              {/* Target Selector Switch */}
+              <div className="p-3 bg-[#f7f6f2] border-b border-[#e2ded5] flex items-center gap-1.5 overflow-x-auto">
+                <span className="text-[10px] font-mono text-[#828794] uppercase pl-1 pr-2">
+                  TARGET:
+                </span>
+                {PREVIEWS.map((target) => (
+                  <button
+                    key={target.name}
+                    onClick={() => setSelectedTarget(target)}
+                    className={`px-2.5 py-1 rounded text-xs font-mono transition-all ${
+                      selectedTarget.name === target.name
+                        ? "bg-[#0e1014] text-[#f7f6f2] font-semibold"
+                        : "bg-[#ffffff] text-[#4b4f59] border border-[#e2ded5] hover:bg-[#ebe6db]"
+                    }`}
+                  >
+                    {target.name}
+                  </button>
+                ))}
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">Deterministic extraction with detected vs inferred flags</p>
-            </div>
 
-            <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-xs hover:border-slate-300 transition-all">
-              <div className="flex items-center gap-2 text-blue-600 mb-1.5">
-                <Sparkles className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">40+ Tech Stacks</span>
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed">Detects Next.js, React, Tailwind, Stripe, CMS &amp; CDNs</p>
-            </div>
+              {/* Live Extraction Lens Payload Body */}
+              <div className="p-4 space-y-4 font-mono text-xs">
+                {/* Socket Security Pin */}
+                <div className="p-2.5 rounded bg-[#f7f6f2] border border-[#e2ded5] space-y-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-[#828794]">RESOLVED_IP:</span>
+                    <span className="text-[#0e1014] font-semibold">{selectedTarget.ip}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-[#828794]">SSRF_SOCKET_STATUS:</span>
+                    <span className="text-[#047857] font-bold">PINNED (ANTI_REBIND)</span>
+                  </div>
+                </div>
 
-            <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-xs hover:border-slate-300 transition-all">
-              <div className="flex items-center gap-2 text-amber-600 mb-1.5">
-                <Zap className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">Sub-Second Speed</span>
+                {/* Extracted Title & Heading */}
+                <div className="space-y-1">
+                  <span className="text-[10px] uppercase text-[#828794] block font-sans font-bold">
+                    [01] Semantic Hierarchy Extracted
+                  </span>
+                  <div className="p-2.5 rounded bg-[#ffffff] border border-[#e2ded5] space-y-1.5">
+                    <div className="text-[11px] text-[#0e1014] font-semibold line-clamp-1">
+                      &lt;title&gt; {selectedTarget.title}
+                    </div>
+                    <div className="text-[11px] text-[#4b4f59] flex items-start gap-1">
+                      <CornerDownRight className="w-3 h-3 text-[#c2410c] flex-shrink-0 mt-0.5" />
+                      <span className="line-clamp-1">H1: {selectedTarget.h1}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detected Tech Footprint */}
+                <div className="space-y-1">
+                  <span className="text-[10px] uppercase text-[#828794] block font-sans font-bold">
+                    [02] Technology Footprint ({selectedTarget.tech.length})
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedTarget.tech.map((t) => (
+                      <span
+                        key={t}
+                        className="px-2 py-0.5 rounded bg-[#ece7dd] border border-[#dcd7cb] text-[10px] font-semibold text-[#0e1014]"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Discovered Contact Page */}
+                <div className="flex items-center justify-between pt-2 border-t border-[#e2ded5] text-[11px]">
+                  <span className="text-[#828794]">CONTACT_ENDPOINT:</span>
+                  <span className="text-[#c2410c] font-semibold">{selectedTarget.contact}</span>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-[#828794]">CONFIDENCE_SCORE:</span>
+                  <span className="text-[#047857] font-bold">
+                    {Math.round(selectedTarget.confidence * 100)}% (VERIFIED)
+                  </span>
+                </div>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">Lightweight streaming Cheerio DOM parsing engine</p>
+
+              {/* Bottom Lens Status */}
+              <div className="px-4 py-2 bg-[#f7f6f2] border-t border-[#e2ded5] flex items-center justify-between text-[10px] font-mono text-[#828794]">
+                <span>AGENT_INGESTION_READY</span>
+                <span className="text-[#0e1014] font-semibold">TOKEN_EFFICIENCY: +92%</span>
+              </div>
             </div>
           </div>
+
         </div>
       </div>
     </section>

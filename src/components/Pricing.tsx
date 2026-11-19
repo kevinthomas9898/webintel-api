@@ -5,56 +5,59 @@ import { Check, Clock, ArrowRight, ShieldCheck, Zap } from "lucide-react";
 
 const TIERS = [
   {
-    name: "Developer Free",
+    name: "Developer Tier",
+    code: "DEV_FREE",
     status: "Active Preview",
     price: "$0",
     period: "forever",
-    description: "Ideal for testing, local prototyping, and personal AI agents.",
+    description: "Ideal for local prototyping, agent evaluation, and personal LLM tool calling.",
     features: [
       "100 website scans / day",
       "Rate limit: 45 req / min",
-      "Full SSRF protection & IP pinning",
+      "Full SSRF socket IP pinning",
       "40+ technology signatures",
-      "Structured JSON & confidence scoring",
-      "Community support",
+      "Deterministic confidence scoring",
+      "Community GitHub support",
     ],
-    ctaText: "Test in Playground",
+    ctaText: "TEST_IN_PLAYGROUND",
     ctaLink: "#playground",
     highlight: false,
   },
   {
-    name: "Pro Agent",
+    name: "Pro Fleet",
+    code: "PRO_AGENT",
     status: "Coming Soon",
     price: "$49",
     period: "per month",
-    description: "For production autonomous agent workflows, CRM pipelines, and lead enrichment.",
+    description: "For high-volume production autonomous agent fleets, CRM pipelines, and lead enrichment.",
     features: [
       "50,000 scans / month",
       "Rate limit: 300 req / min",
       "Deep 2-page contact enrichment",
       "Webhook delivery for batch scans",
       "Domain change monitoring & alerts",
-      "Dedicated Slack channel support",
+      "Priority SLA & dedicated Slack channel",
     ],
-    ctaText: "Join Waitlist",
+    ctaText: "JOIN_EARLY_ACCESS",
     ctaLink: "#playground",
     highlight: true,
   },
   {
     name: "Enterprise Cluster",
+    code: "ENT_CLUSTER",
     status: "Coming Soon",
     price: "Custom",
     period: "annual",
-    description: "For high-throughput AI fleets, hedge funds, and cybersecurity platforms.",
+    description: "For high-throughput AI platforms, institutional research, and cybersecurity intelligence.",
     features: [
-      "Unlimited monthly scans",
+      "Unlimited monthly URL scans",
       "Dedicated egress IP proxies",
-      "Custom technology signatures",
-      "On-premise / VPC container deployment",
+      "Custom technology heuristic rules",
+      "VPC / On-premise container deployment",
       "99.99% uptime SLA guarantee",
       "24/7 dedicated security engineering",
     ],
-    ctaText: "Contact Enterprise",
+    ctaText: "CONTACT_ARCHITECTS",
     ctaLink: "#playground",
     highlight: false,
   },
@@ -64,97 +67,104 @@ export function Pricing() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
 
   return (
-    <section id="pricing" className="py-20 bg-slate-50 border-b border-slate-200/80">
+    <section id="pricing" className="py-20 bg-[#f7f6f2] border-b border-[#e2ded5]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-xs font-semibold text-indigo-700 mb-3">
-            <Clock className="w-3.5 h-3.5" />
-            Transparent Pricing (Commercial Tiers Coming Soon)
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12 pb-6 border-b border-[#e2ded5]">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#ece7dd] border border-[#dcd7cb] text-[10px] font-mono text-[#4b4f59] uppercase font-semibold mb-2">
+              <Clock className="w-3.5 h-3.5 text-[#c2410c]" />
+              CAPACITY_ALLOCATION
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0e1014]">
+              Predictable Scale for Agent Fleets
+            </h2>
+            <p className="mt-1 text-xs sm:text-sm text-[#4b4f59]">
+              WebIntel API is currently available free for developers during public preview.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
-            Plans Engineered for Every Stage
-          </h2>
-          <p className="mt-4 text-slate-600 text-sm sm:text-base leading-relaxed">
-            The WebIntel API is currently free for developers during public preview.
-            Commercial tiers with higher throughput and webhooks will launch soon.
-          </p>
 
-          {/* Billing Toggle */}
-          <div className="mt-6 inline-flex items-center p-1 rounded-xl bg-slate-200/70 border border-slate-300">
+          {/* Billing Switcher */}
+          <div className="inline-flex items-center p-1 rounded-md bg-[#ece7dd] border border-[#dcd7cb] font-mono text-xs">
             <button
               onClick={() => setBillingCycle("monthly")}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1 rounded transition-all ${
                 billingCycle === "monthly"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-[#0e1014] text-[#f7f6f2] font-semibold"
+                  : "text-[#4b4f59] hover:text-[#0e1014]"
               }`}
             >
-              Monthly Billing
+              MONTHLY
             </button>
             <button
               onClick={() => setBillingCycle("annual")}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1 rounded transition-all flex items-center gap-1.5 ${
                 billingCycle === "annual"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-[#0e1014] text-[#f7f6f2] font-semibold"
+                  : "text-[#4b4f59] hover:text-[#0e1014]"
               }`}
             >
-              <span>Annual</span>
-              <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                Save 20%
+              <span>ANNUAL</span>
+              <span className="px-1.5 py-0.2 rounded bg-[#e6f4ea] text-[#047857] text-[10px] font-bold">
+                -20%
               </span>
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+        {/* 3-Column Plan Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto items-stretch">
           {TIERS.map((tier, idx) => (
             <div
               key={idx}
-              className={`p-7 rounded-2xl flex flex-col justify-between transition-all duration-200 bg-white ${
+              className={`p-6 sm:p-7 rounded-xl flex flex-col justify-between transition-all font-mono ${
                 tier.highlight
-                  ? "border-2 border-indigo-600 shadow-lg shadow-indigo-100 relative"
-                  : "border border-slate-200 shadow-xs hover:border-slate-300 hover:shadow-sm"
+                  ? "bg-[#ffffff] border-2 border-[#0e1014] shadow-md relative"
+                  : "bg-[#ffffff] border border-[#e2ded5] shadow-xs hover:border-[#d5d1c6]"
               }`}
             >
               {tier.highlight && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-indigo-600 text-white text-[11px] font-bold uppercase tracking-wider shadow-sm">
-                  Recommended for Agents
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded bg-[#0e1014] text-[#f7f6f2] text-[10px] font-bold uppercase tracking-wider">
+                  RECOMMENDED_FOR_FLEETS
                 </div>
               )}
 
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-bold text-slate-900">{tier.name}</h3>
+                <div className="flex items-center justify-between pb-3 border-b border-[#f1ede4] mb-4">
+                  <div>
+                    <span className="text-[10px] text-[#828794] block uppercase">{tier.code}</span>
+                    <h3 className="text-base font-bold text-[#0e1014]">{tier.name}</h3>
+                  </div>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                       tier.status === "Coming Soon"
-                        ? "bg-amber-50 border border-amber-200 text-amber-700"
-                        : "bg-emerald-50 border border-emerald-200 text-emerald-700"
+                        ? "bg-[#ece7dd] text-[#828794]"
+                        : "bg-[#e6f4ea] text-[#047857] border border-[#b7e1cd]"
                     }`}
                   >
                     {tier.status}
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-500 mb-5 min-h-[36px] leading-relaxed">
+                <p className="text-xs text-[#4b4f59] font-sans mb-5 min-h-[38px] leading-relaxed">
                   {tier.description}
                 </p>
 
                 <div className="flex items-baseline gap-1.5 mb-6">
-                  <span className="text-3xl font-extrabold text-slate-900">
+                  <span className="text-3xl font-extrabold text-[#0e1014]">
                     {billingCycle === "annual" && tier.price === "$49" ? "$39" : tier.price}
                   </span>
-                  <span className="text-xs text-slate-500">/ {tier.period}</span>
+                  <span className="text-xs text-[#828794]">/ {tier.period}</span>
                 </div>
 
-                <div className="space-y-3 pt-4 border-t border-slate-100">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                    What&apos;s Included:
+                <div className="space-y-2.5 pt-4 border-t border-[#f1ede4]">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#828794] mb-1">
+                    SPECIFICATIONS:
                   </div>
                   {tier.features.map((feat, fIdx) => (
-                    <div key={fIdx} className="flex items-start gap-2.5 text-xs text-slate-600">
-                      <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <div key={fIdx} className="flex items-start gap-2 text-xs text-[#4b4f59] font-sans">
+                      <Check className="w-3.5 h-3.5 text-[#047857] flex-shrink-0 mt-0.5" />
                       <span>{feat}</span>
                     </div>
                   ))}
@@ -164,10 +174,10 @@ export function Pricing() {
               <div className="pt-8">
                 <a
                   href={tier.ctaLink}
-                  className={`w-full py-2.5 rounded-xl text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                  className={`w-full py-2.5 rounded-md text-center text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-all ${
                     tier.highlight
-                      ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm shadow-indigo-200"
-                      : "bg-slate-100 hover:bg-slate-200 text-slate-800"
+                      ? "bg-[#0e1014] hover:bg-[#252830] text-[#f7f6f2] shadow-xs"
+                      : "bg-[#f1ede4] hover:bg-[#e4dfd3] text-[#0e1014] border border-[#dcd7cb]"
                   }`}
                 >
                   <span>{tier.ctaText}</span>
@@ -178,18 +188,19 @@ export function Pricing() {
           ))}
         </div>
 
-        {/* Security guarantee pill */}
-        <div className="mt-12 max-w-xl mx-auto p-4 rounded-xl bg-white border border-slate-200 shadow-xs flex items-center justify-center gap-4 text-xs text-slate-600 text-center">
-          <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+        {/* Security and Edge Guarantee Strip */}
+        <div className="mt-12 max-w-xl mx-auto p-3.5 rounded-lg bg-[#ffffff] border border-[#e2ded5] shadow-xs flex flex-wrap items-center justify-center gap-5 text-xs font-mono text-[#4b4f59]">
+          <div className="flex items-center gap-1.5 text-[#047857] font-semibold">
             <ShieldCheck className="w-4 h-4" />
-            <span>Zero Data Leakage Guarantee</span>
+            <span>PINNED_SOCKET_GUARANTEE</span>
           </div>
-          <span className="text-slate-300">|</span>
-          <div className="flex items-center gap-1.5 text-indigo-700 font-semibold">
-            <Zap className="w-4 h-4" />
-            <span>Sub-500ms Edge Latency</span>
+          <span className="text-[#d5d1c6]">|</span>
+          <div className="flex items-center gap-1.5 text-[#0e1014] font-semibold">
+            <Zap className="w-4 h-4 text-[#c2410c]" />
+            <span>SUB_500MS_THROUGHPUT</span>
           </div>
         </div>
+
       </div>
     </section>
   );

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "WebIntel API | Website Intelligence for AI Agents",
+  title: "WebIntel API | Autonomous Website Intelligence for AI Agents",
   description:
-    "High-speed website intelligence API designed for AI agents and LLMs. Extract tech stacks, company profiles, contacts, verified headings, and structured data with zero fabrication and enterprise SSRF defense.",
+    "Precision website reconnaissance and structured telemetry API designed for autonomous AI agents, LLM toolchains, and data pipelines. Features socket IP pinning and zero-fabrication extraction.",
   keywords: [
     "AI Agent API",
     "Website Scanner",
@@ -14,10 +14,10 @@ export const metadata: Metadata = {
     "Cheerio",
     "LLM Tools",
   ],
-  authors: [{ name: "WebIntel API Team" }],
+  authors: [{ name: "WebIntel Engineering" }],
   openGraph: {
-    title: "WebIntel API | Website Intelligence for AI Agents",
-    description: "Submit any public URL and receive structured, factual intelligence for AI agents.",
+    title: "WebIntel API | Precision Web Intelligence for AI Agents",
+    description: "Surgical URL extraction and security perimeter telemetry for autonomous agents.",
     url: "https://webintel-api.dev",
     siteName: "WebIntel API",
     type: "website",
@@ -31,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased selection:bg-indigo-600 selection:text-white">
+      <body className="min-h-screen flex flex-col bg-[#f7f6f2] text-[#0e1014] antialiased selection:bg-[#0e1014] selection:text-[#f7f6f2]">
         {children}
       </body>
     </html>

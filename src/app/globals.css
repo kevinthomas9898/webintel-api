@@ -1,31 +1,60 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --canvas-bg: #f7f6f2;
+  --surface-card: #ffffff;
+  --surface-subtle: #f1ede4;
+  --hairline: #e2ded5;
+  --ink-primary: #0e1014;
+  --ink-secondary: #4b4f59;
+  --ink-muted: #828794;
+  --signal-copper: #c2410c;
+  --signal-amber: #d97706;
+  --signal-emerald: #047857;
+  --signal-blue: #1d4ed8;
 }
 
 body {
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--canvas-bg);
+  color: var(--ink-primary);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
-/* Crisp subtle scrollbars */
+/* Precision drafting grid background utility */
+.drafting-grid {
+  background-image: 
+    linear-gradient(to right, rgba(226, 222, 213, 0.45) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(226, 222, 213, 0.45) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.drafting-grid-subtle {
+  background-image: 
+    linear-gradient(to right, rgba(226, 222, 213, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(226, 222, 213, 0.25) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Precise hairline borders */
+.border-hairline {
+  border-color: #e2ded5;
+}
+
+/* Subtle architectural scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f1ede4;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
+  background: #c9c4b7;
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #a39e92;
 }

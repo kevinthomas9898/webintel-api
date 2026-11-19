@@ -1,71 +1,70 @@
 "use client";
 
 import React, { useState } from "react";
-import { Terminal, ShieldCheck, Cpu, Code2, Menu, X, ArrowUpRight } from "lucide-react";
+import { Shield, Cpu, Code2, Menu, X, ArrowUpRight } from "lucide-react";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-white/90 border-b border-slate-200/80 transition-colors">
+    <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-[#f7f6f2]/95 border-b border-[#e2ded5] transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo & Brand */}
+        <div className="flex items-center justify-between h-15">
+          {/* Logo & Brand Architecture */}
           <div className="flex items-center gap-3">
             <a href="#" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-sm shadow-indigo-200 group-hover:bg-indigo-700 transition-colors">
-                <Terminal className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 rounded-md bg-[#0e1014] text-[#f7f6f2] flex items-center justify-center font-mono text-xs font-bold shadow-xs group-hover:bg-[#22252c] transition-colors">
+                WI
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-lg tracking-tight text-slate-900">
+                <span className="font-bold text-base tracking-tight text-[#0e1014]">
                   WebIntel
                 </span>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700">
-                  API
+                <span className="font-mono text-[10px] tracking-wider px-1.5 py-0.5 rounded bg-[#ebe6db] border border-[#dcd7cb] text-[#4b4f59] uppercase font-semibold">
+                  API v1.0
                 </span>
               </div>
             </a>
 
-            {/* API Status Badge */}
-            <div className="hidden sm:flex items-center gap-1.5 ml-3 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-700 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              API Operational
+            {/* Live Security Perimeter Status Pip */}
+            <div className="hidden lg:flex items-center gap-2 ml-4 pl-4 border-l border-[#e2ded5] text-[11px] font-mono text-[#4b4f59]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#047857] animate-pulse" />
+              <span>SSRF_SHIELD: PINNED</span>
+              <span className="text-[#a39e92]">|</span>
+              <span className="text-[#047857] font-semibold">ONLINE</span>
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-            <a href="#playground" className="hover:text-indigo-600 transition-colors flex items-center gap-1.5">
-              <Cpu className="w-4 h-4 text-slate-400" />
-              Playground
+          {/* Precision Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-7 text-xs font-mono text-[#4b4f59]">
+            <a href="#playground" className="hover:text-[#0e1014] transition-colors flex items-center gap-1.5">
+              <Cpu className="w-3.5 h-3.5 text-[#828794]" />
+              INSPECTION_DECK
             </a>
-            <a href="#features" className="hover:text-indigo-600 transition-colors">
-              Features
+            <a href="#security" className="hover:text-[#0e1014] transition-colors flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-[#047857]" />
+              SSRF_ARMOR
             </a>
-            <a href="#use-cases" className="hover:text-indigo-600 transition-colors">
-              Use Cases
+            <a href="#matrix" className="hover:text-[#0e1014] transition-colors">
+              TECH_RADAR
             </a>
-            <a href="#docs" className="hover:text-indigo-600 transition-colors flex items-center gap-1.5">
-              <Code2 className="w-4 h-4 text-slate-400" />
-              Docs
+            <a href="#docs" className="hover:text-[#0e1014] transition-colors flex items-center gap-1.5">
+              <Code2 className="w-3.5 h-3.5 text-[#828794]" />
+              API_DOCS
             </a>
-            <a href="#features" className="hover:text-indigo-600 transition-colors flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              SSRF Armor
-            </a>
-            <a href="#pricing" className="hover:text-indigo-600 transition-colors">
-              Pricing
+            <a href="#pricing" className="hover:text-[#0e1014] transition-colors">
+              PRICING
             </a>
           </nav>
 
-          {/* CTA Button */}
+          {/* Action Button */}
           <div className="hidden md:flex items-center gap-3">
             <a
               href="#playground"
-              className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm shadow-indigo-200 transition-all duration-150 flex items-center gap-1.5"
+              className="px-3.5 py-1.5 text-xs font-mono font-semibold text-[#f7f6f2] bg-[#0e1014] hover:bg-[#252830] rounded-md transition-all flex items-center gap-1.5 shadow-xs"
             >
-              Test Endpoint
-              <ArrowUpRight className="w-4 h-4" />
+              <span>RUN_SCAN</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </a>
           </div>
 
@@ -73,64 +72,67 @@ export function Header() {
           <div className="flex md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              className="p-1.5 rounded-md text-[#4b4f59] hover:text-[#0e1014] hover:bg-[#ebe6db] transition-colors"
               aria-label="Toggle Menu"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Responsive Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-medium text-emerald-700">API Operational (v1.0)</span>
+        <div className="md:hidden border-b border-[#e2ded5] bg-[#f7f6f2] px-4 pt-3 pb-5 space-y-2.5 shadow-sm font-mono text-xs">
+          <div className="flex items-center justify-between pb-2 border-b border-[#e2ded5] text-[#4b4f59]">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#047857] animate-pulse" />
+              STATUS: OPERATIONAL
+            </span>
+            <span className="text-[10px] text-[#828794]">NODE v24 / NEXT v16</span>
           </div>
           <a
             href="#playground"
             onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
+            className="block px-3 py-2 rounded-md text-[#0e1014] hover:bg-[#ebe6db]"
           >
-            Playground
+            &gt; INSPECTION_DECK
           </a>
           <a
-            href="#features"
+            href="#security"
             onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
+            className="block px-3 py-2 rounded-md text-[#0e1014] hover:bg-[#ebe6db]"
           >
-            Features
+            &gt; SSRF_ARMOR
           </a>
           <a
-            href="#use-cases"
+            href="#matrix"
             onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
+            className="block px-3 py-2 rounded-md text-[#0e1014] hover:bg-[#ebe6db]"
           >
-            Use Cases
+            &gt; TECH_RADAR
           </a>
           <a
             href="#docs"
             onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
+            className="block px-3 py-2 rounded-md text-[#0e1014] hover:bg-[#ebe6db]"
           >
-            API Documentation
+            &gt; API_DOCS
           </a>
           <a
             href="#pricing"
             onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
+            className="block px-3 py-2 rounded-md text-[#0e1014] hover:bg-[#ebe6db]"
           >
-            Pricing
+            &gt; PRICING
           </a>
           <div className="pt-2">
             <a
               href="#playground"
               onClick={() => setMobileMenuOpen(false)}
-              className="block w-full text-center px-4 py-2.5 rounded-lg bg-indigo-600 text-white font-medium text-sm shadow-sm"
+              className="block w-full text-center px-4 py-2.5 rounded-md bg-[#0e1014] text-[#f7f6f2] font-semibold text-xs"
             >
-              Scan a Website Now
+              RUN_SCAN_NOW()
             </a>
           </div>
         </div>

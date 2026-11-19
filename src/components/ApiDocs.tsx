@@ -60,68 +60,77 @@ print("Emails:", data.get("emails"))`,
   };
 
   return (
-    <section id="docs" className="py-20 bg-white border-b border-slate-200/80">
+    <section id="docs" className="py-20 bg-[#f7f6f2] border-b border-[#e2ded5]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-xs font-semibold text-indigo-700 mb-3">
-            <Code2 className="w-3.5 h-3.5" />
-            Developer Reference
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12 pb-6 border-b border-[#e2ded5]">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#ece7dd] border border-[#dcd7cb] text-[10px] font-mono text-[#4b4f59] uppercase font-semibold mb-2">
+              <Code2 className="w-3.5 h-3.5 text-[#c2410c]" />
+              API_INTERFACE_SPECIFICATION
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0e1014]">
+              Developer Documentation
+            </h2>
+            <p className="mt-1 text-xs sm:text-sm text-[#4b4f59]">
+              Standard REST endpoint specifications, input validation schemas, and client examples.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
-            API Documentation
-          </h2>
-          <p className="mt-4 text-slate-600 text-sm sm:text-base leading-relaxed">
-            Integrate WebIntel API into your agents, scripts, or backend services in minutes.
-          </p>
+
+          <div className="font-mono text-xs text-[#828794]">
+            [FORMAT: APPLICATION_JSON]
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
           {/* Left Column: API Specification */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="p-6 rounded-2xl bg-slate-50/80 border border-slate-200 space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-md bg-indigo-600 text-white font-mono text-xs font-bold">
+          <div className="lg:col-span-5 space-y-5">
+            <div className="p-5 sm:p-6 rounded-xl bg-[#ffffff] border border-[#e2ded5] shadow-xs space-y-4 font-mono text-xs">
+              <div className="flex items-center gap-2 pb-3 border-b border-[#f1ede4]">
+                <span className="px-2 py-0.5 rounded bg-[#0e1014] text-[#f7f6f2] text-xs font-bold">
                   POST
                 </span>
-                <span className="font-mono text-sm font-semibold text-slate-900">/api/scan</span>
+                <span className="text-sm font-bold text-[#0e1014]">/api/scan</span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <p className="text-[#4b4f59] font-sans text-xs leading-relaxed">
                 Submits a public website URL for scanning and extraction. Automatically runs SSRF
                 verification, resolves DNS, crawls meta and DOM tags, detects 40+ technologies, and
                 returns clean structured JSON.
               </p>
 
-              <div className="pt-2 border-t border-slate-200">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3">
+              <div className="pt-2 border-t border-[#f1ede4]">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#828794] mb-3">
                   Request Parameters
                 </h4>
-                <div className="space-y-3 font-mono text-xs">
-                  <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
-                    <div className="flex items-center justify-between text-indigo-700 font-semibold">
+                <div className="space-y-2.5 text-xs">
+                  <div className="p-3 rounded bg-[#faf9f6] border border-[#e2ded5]">
+                    <div className="flex items-center justify-between text-[#c2410c] font-semibold">
                       <span>url</span>
-                      <span className="text-[11px] text-rose-600 font-sans font-medium">Required (string)</span>
+                      <span className="text-[10px] text-[#c53030] font-sans font-medium">Required (string)</span>
                     </div>
-                    <p className="text-slate-600 text-[11px] font-sans mt-1">
+                    <p className="text-[#4b4f59] text-[11px] font-sans mt-1">
                       Target public website URL (must start with http:// or https://).
                     </p>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
-                    <div className="flex items-center justify-between text-indigo-700 font-semibold">
+                  <div className="p-3 rounded bg-[#faf9f6] border border-[#e2ded5]">
+                    <div className="flex items-center justify-between text-[#0e1014] font-semibold">
                       <span>deepScan</span>
-                      <span className="text-[11px] text-slate-400 font-sans font-medium">Optional (bool, default false)</span>
+                      <span className="text-[10px] text-[#828794] font-sans font-medium">Optional (bool, false)</span>
                     </div>
-                    <p className="text-slate-600 text-[11px] font-sans mt-1">
-                      When true, safely inspects discovered contact or about pages to enrich email and team data.
+                    <p className="text-[#4b4f59] text-[11px] font-sans mt-1">
+                      When true, safely inspects discovered contact or about pages on same domain.
                     </p>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
-                    <div className="flex items-center justify-between text-indigo-700 font-semibold">
+                  <div className="p-3 rounded bg-[#faf9f6] border border-[#e2ded5]">
+                    <div className="flex items-center justify-between text-[#0e1014] font-semibold">
                       <span>includeContent</span>
-                      <span className="text-[11px] text-slate-400 font-sans font-medium">Optional (bool, default true)</span>
+                      <span className="text-[10px] text-[#828794] font-sans font-medium">Optional (bool, true)</span>
                     </div>
-                    <p className="text-slate-600 text-[11px] font-sans mt-1">
+                    <p className="text-[#4b4f59] text-[11px] font-sans mt-1">
                       Includes cleaned semantic paragraph text snippets for direct LLM ingestion.
                     </p>
                   </div>
@@ -129,26 +138,26 @@ print("Emails:", data.get("emails"))`,
               </div>
 
               {/* Status codes */}
-              <div className="pt-2 border-t border-slate-200">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-                  Response Codes
+              <div className="pt-2 border-t border-[#f1ede4]">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#828794] mb-2">
+                  Response HTTP Codes
                 </h4>
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <div className="p-2 rounded-lg bg-white border border-slate-200">
-                    <span className="font-bold text-emerald-700">200 OK</span>
-                    <span className="text-slate-500 block">Scan succeeded</span>
+                  <div className="p-2 rounded bg-[#faf9f6] border border-[#e2ded5]">
+                    <span className="font-bold text-[#047857]">200 OK</span>
+                    <span className="text-[#828794] block text-[10px]">Scan succeeded</span>
                   </div>
-                  <div className="p-2 rounded-lg bg-white border border-slate-200">
-                    <span className="font-bold text-amber-700">400 Bad Request</span>
-                    <span className="text-slate-500 block">Malformed URL</span>
+                  <div className="p-2 rounded bg-[#faf9f6] border border-[#e2ded5]">
+                    <span className="font-bold text-[#d97706]">400 Bad Request</span>
+                    <span className="text-[#828794] block text-[10px]">Malformed URL</span>
                   </div>
-                  <div className="p-2 rounded-lg bg-white border border-slate-200">
-                    <span className="font-bold text-rose-700">403 Forbidden</span>
-                    <span className="text-slate-500 block">SSRF / robots block</span>
+                  <div className="p-2 rounded bg-[#faf9f6] border border-[#e2ded5]">
+                    <span className="font-bold text-[#c53030]">403 Forbidden</span>
+                    <span className="text-[#828794] block text-[10px]">SSRF / robots block</span>
                   </div>
-                  <div className="p-2 rounded-lg bg-white border border-slate-200">
-                    <span className="font-bold text-purple-700">429 Rate Limit</span>
-                    <span className="text-slate-500 block">&gt; 45 scans / min</span>
+                  <div className="p-2 rounded bg-[#faf9f6] border border-[#e2ded5]">
+                    <span className="font-bold text-[#6b46c1]">429 Rate Limit</span>
+                    <span className="text-[#828794] block text-[10px]">&gt; 45 scans / min</span>
                   </div>
                 </div>
               </div>
@@ -157,36 +166,36 @@ print("Emails:", data.get("emails"))`,
 
           {/* Right Column: Code Snippets & Response */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="rounded-2xl bg-[#0f172a] border border-slate-800 overflow-hidden shadow-md">
+            <div className="rounded-xl bg-[#0e1014] border border-[#252830] overflow-hidden shadow-xs">
               {/* Language Switcher */}
-              <div className="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+              <div className="px-4 py-2.5 bg-[#171a21] border-b border-[#252830] flex items-center justify-between font-mono text-xs">
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setSelectedLang("curl")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-3 py-1 rounded transition-all ${
                       selectedLang === "curl"
-                        ? "bg-indigo-600 text-white font-bold"
-                        : "text-slate-400 hover:text-white"
+                        ? "bg-[#ffffff] text-[#0e1014] font-bold"
+                        : "text-[#828794] hover:text-[#ece7dd]"
                     }`}
                   >
                     cURL
                   </button>
                   <button
                     onClick={() => setSelectedLang("node")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-3 py-1 rounded transition-all ${
                       selectedLang === "node"
-                        ? "bg-indigo-600 text-white font-bold"
-                        : "text-slate-400 hover:text-white"
+                        ? "bg-[#ffffff] text-[#0e1014] font-bold"
+                        : "text-[#828794] hover:text-[#ece7dd]"
                     }`}
                   >
-                    Node.js / TS
+                    Node.js
                   </button>
                   <button
                     onClick={() => setSelectedLang("python")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-3 py-1 rounded transition-all ${
                       selectedLang === "python"
-                        ? "bg-indigo-600 text-white font-bold"
-                        : "text-slate-400 hover:text-white"
+                        ? "bg-[#ffffff] text-[#0e1014] font-bold"
+                        : "text-[#828794] hover:text-[#ece7dd]"
                     }`}
                   >
                     Python
@@ -195,40 +204,40 @@ print("Emails:", data.get("emails"))`,
 
                 <button
                   onClick={handleCopy}
-                  className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium flex items-center gap-1.5 transition-colors"
+                  className="px-2.5 py-1 rounded bg-[#252830] hover:bg-[#333742] text-[#ece7dd] text-xs font-medium flex items-center gap-1.5 transition-colors"
                 >
                   {copied ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-emerald-400">Copied</span>
+                      <Check className="w-3 h-3 text-[#047857]" />
+                      <span className="text-[#047857] font-semibold">COPIED</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Copy</span>
+                      <Copy className="w-3 h-3 text-[#828794]" />
+                      <span>COPY</span>
                     </>
                   )}
                 </button>
               </div>
 
               {/* Code Snippet Box */}
-              <div className="p-4 overflow-x-auto">
-                <pre className="font-mono text-xs text-indigo-200 leading-relaxed">
+              <div className="p-4 sm:p-5 overflow-x-auto">
+                <pre className="font-mono text-xs text-[#ece7dd] leading-relaxed">
                   {SNIPPETS[selectedLang]}
                 </pre>
               </div>
             </div>
 
             {/* Example JSON output preview */}
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="flex items-center justify-between text-xs text-slate-600">
-                <span className="font-semibold text-slate-800 flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-indigo-600" />
-                  Standard Response Format (Schema Guaranteed)
+            <div className="p-4 rounded-xl bg-[#ffffff] border border-[#e2ded5] space-y-2 font-mono text-xs">
+              <div className="flex items-center justify-between text-[#828794] pb-2 border-b border-[#f1ede4]">
+                <span className="font-bold text-[#0e1014] flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-[#c2410c]" />
+                  OUTPUT_SCHEMA: GUARANTEED_SHAPE
                 </span>
-                <span className="text-[11px] text-slate-500 font-mono">200 OK application/json</span>
+                <span className="text-[10px]">200 OK application/json</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-[#0f172a] font-mono text-[11px] text-indigo-200 max-h-48 overflow-y-auto leading-relaxed">
+              <div className="p-3.5 rounded bg-[#0e1014] text-[#ece7dd] text-[11px] max-h-48 overflow-y-auto leading-relaxed">
 {`{
   "success": true,
   "website": "https://stripe.com",
@@ -246,7 +255,9 @@ print("Emails:", data.get("emails"))`,
               </div>
             </div>
           </div>
+
         </div>
+
       </div>
     </section>
   );
