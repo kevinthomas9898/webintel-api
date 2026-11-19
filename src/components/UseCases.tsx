@@ -40,17 +40,17 @@ const USE_CASES = [
 
 export function UseCases() {
   return (
-    <section id="use-cases" className="py-20 bg-[#070a12] border-b border-slate-800/80">
+    <section id="use-cases" className="py-20 bg-slate-50 border-b border-slate-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold text-cyan-400 mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-xs font-semibold text-indigo-700 mb-3">
             <Bot className="w-3.5 h-3.5" />
             Applied Website Intelligence
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
             How Engineers Deploy WebIntel API
           </h2>
-          <p className="mt-4 text-slate-400 text-sm sm:text-base leading-relaxed">
+          <p className="mt-4 text-slate-600 text-sm sm:text-base leading-relaxed">
             From autonomous workflow agents to automated pipeline enrichment, WebIntel API delivers
             trusted intelligence everywhere data matters.
           </p>
@@ -60,27 +60,27 @@ export function UseCases() {
           {USE_CASES.map((uc, idx) => (
             <div
               key={idx}
-              className="p-6 sm:p-7 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all"
+              className="p-6 sm:p-7 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between hover:border-slate-300 hover:shadow-md transition-all"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-cyan-400">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
                     <uc.icon className="w-5 h-5" />
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-xs font-semibold text-slate-300">
+                  <span className="px-2.5 py-1 rounded-full bg-slate-100 text-xs font-semibold text-slate-700">
                     {uc.badge}
                   </span>
                 </div>
 
-                <h3 className="text-lg font-bold text-white mb-2">{uc.title}</h3>
-                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed mb-5">
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">{uc.title}</h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-5">
                   {uc.description}
                 </p>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800 font-mono text-xs text-indigo-300 flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-slate-900 font-mono text-xs text-indigo-200 flex items-center justify-between shadow-2xs">
                 <code>{uc.example}</code>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
               </div>
             </div>
           ))}

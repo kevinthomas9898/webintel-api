@@ -5,27 +5,25 @@ import { Terminal, Shield } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="bg-[#05080e] border-t border-slate-900 text-slate-400 text-xs">
+    <footer className="bg-white border-t border-slate-200 text-slate-500 text-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
           {/* Brand Col */}
           <div className="md:col-span-2 space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-500 p-0.5 flex items-center justify-center">
-                <div className="w-full h-full bg-[#0b1120] rounded-[6px] flex items-center justify-center">
-                  <Terminal className="w-3.5 h-3.5 text-cyan-400" />
-                </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center shadow-xs">
+                <Terminal className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold text-base text-white tracking-tight">WebIntel API</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono">
-                v1.0.0
+              <span className="font-bold text-base text-slate-900 tracking-tight">WebIntel API</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-mono font-semibold border border-indigo-200">
+                v1.0.0 Live
               </span>
             </div>
-            <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
+            <p className="text-slate-600 text-xs leading-relaxed max-w-sm">
               The high-speed, factual website intelligence layer engineered for AI agents, LLM
               toolchains, and automated data pipelines.
             </p>
-            <div className="flex items-center gap-2 text-[11px] text-emerald-400">
+            <div className="flex items-center gap-2 text-[11px] text-emerald-700 font-medium">
               <Shield className="w-3.5 h-3.5" />
               <span>Full SSRF Defense &amp; DNS Rebinding Armor Enforced</span>
             </div>
@@ -33,32 +31,32 @@ export function Footer() {
 
           {/* Quick Links */}
           <div className="space-y-3">
-            <h4 className="font-semibold text-slate-200 uppercase tracking-wider text-[11px]">
+            <h4 className="font-semibold text-slate-900 uppercase tracking-wider text-[11px]">
               Platform
             </h4>
             <ul className="space-y-2">
               <li>
-                <a href="#playground" className="hover:text-cyan-400 transition-colors">
+                <a href="#playground" className="text-slate-600 hover:text-indigo-600 transition-colors">
                   Interactive Playground
                 </a>
               </li>
               <li>
-                <a href="#features" className="hover:text-cyan-400 transition-colors">
+                <a href="#features" className="text-slate-600 hover:text-indigo-600 transition-colors">
                   Core Capabilities
                 </a>
               </li>
               <li>
-                <a href="#use-cases" className="hover:text-cyan-400 transition-colors">
+                <a href="#use-cases" className="text-slate-600 hover:text-indigo-600 transition-colors">
                   Agent Use Cases
                 </a>
               </li>
               <li>
-                <a href="#docs" className="hover:text-cyan-400 transition-colors">
+                <a href="#docs" className="text-slate-600 hover:text-indigo-600 transition-colors">
                   API Reference
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="hover:text-cyan-400 transition-colors">
+                <a href="#pricing" className="text-slate-600 hover:text-indigo-600 transition-colors">
                   Pricing &amp; Limits
                 </a>
               </li>
@@ -67,10 +65,10 @@ export function Footer() {
 
           {/* Security Notice */}
           <div className="space-y-3">
-            <h4 className="font-semibold text-slate-200 uppercase tracking-wider text-[11px]">
+            <h4 className="font-semibold text-slate-900 uppercase tracking-wider text-[11px]">
               Security &amp; Policy
             </h4>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
+            <p className="text-[11px] text-slate-600 leading-relaxed">
               WebIntel API operates exclusively on public internet endpoints. All requests validate
               DNS records against RFC-1918, RFC-3927, and RFC-4193. Requests to private networks,
               internal clouds, loopbacks, or cloud metadata services are permanently blocked.
@@ -79,12 +77,17 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-slate-900/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+        <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
           <div>
             &copy; 2026 WebIntel API. All rights reserved.
           </div>
-          <div className="flex items-center gap-1 text-slate-500">
-            <span>Built with precision for autonomous AI agents</span>
+          <div className="flex items-center gap-4">
+            <a href="#playground" className="hover:text-indigo-600 flex items-center gap-1">
+              <span>Status: Operational</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            </a>
+            <span className="text-slate-300">|</span>
+            <span className="text-slate-500">Built for Autonomous AI Agents</span>
           </div>
         </div>
       </div>

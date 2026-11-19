@@ -2,6 +2,8 @@ import React from "react";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { Playground } from "@/components/Playground";
+import { SsrfSandbox } from "@/components/SsrfSandbox";
+import { TechRadar } from "@/components/TechRadar";
 import { Features } from "@/components/Features";
 import { UseCases } from "@/components/UseCases";
 import { ApiDocs } from "@/components/ApiDocs";
@@ -10,10 +12,12 @@ import { Footer } from "@/components/Footer";
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col bg-[#090d16] text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <main className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased selection:bg-indigo-600 selection:text-white">
       <Header />
       <Hero />
       <Playground />
+      <SsrfSandbox />
+      <TechRadar />
       <Features />
       <UseCases />
       <ApiDocs />
