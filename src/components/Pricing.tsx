@@ -68,7 +68,7 @@ export function Pricing() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [scanVolume, setScanVolume] = useState<number>(25000);
 
-  const costPerScan = 0.008;
+  const costPerScan = 0.005;
   const estimatedCost = (scanVolume * costPerScan).toFixed(2);
   const tokenSavingsPercent = "87%";
 
@@ -104,7 +104,7 @@ export function Pricing() {
               <DollarSign className="w-3.5 h-3.5 text-[#c2410c]" />
               <span>PAY_PER_CRAWL</span>
               <span className="px-1.5 py-0.2 rounded bg-[#fff7ed] text-[#c2410c] text-[10px] font-bold">
-                $0.008
+                $0.005
               </span>
             </button>
             <button
@@ -144,7 +144,7 @@ export function Pricing() {
                 </div>
 
                 <div className="text-right sm:text-right flex-shrink-0">
-                  <div className="text-3xl font-extrabold text-[#0e1014]">$0.008</div>
+                  <div className="text-3xl font-extrabold text-[#0e1014]">$0.005</div>
                   <div className="text-xs text-[#828794]">USD / verified scan</div>
                 </div>
               </div>
@@ -174,10 +174,10 @@ export function Pricing() {
                 />
 
                 <div className="flex justify-between text-[11px] text-[#828794]">
-                  <span>1,000 scans ($8)</span>
-                  <span>50,000 scans ($400)</span>
-                  <span>100,000 scans ($800)</span>
-                  <span>200,000 scans ($1,600)</span>
+                  <span>1,000 scans ($5)</span>
+                  <span>50,000 scans ($250)</span>
+                  <span>100,000 scans ($500)</span>
+                  <span>200,000 scans ($1,000)</span>
                 </div>
 
                 {/* Calculation Output Cards */}
@@ -185,7 +185,7 @@ export function Pricing() {
                   <div className="p-3.5 rounded bg-[#ffffff] border border-[#e2ded5]">
                     <div className="text-[10px] text-[#828794] uppercase">Total Cost Charged</div>
                     <div className="text-2xl font-extrabold text-[#0e1014] mt-0.5">${estimatedCost}</div>
-                    <div className="text-[10px] text-[#047857] mt-1 font-sans">Billed per request at $0.008</div>
+                    <div className="text-[10px] text-[#047857] mt-1 font-sans">Billed per request at $0.005</div>
                   </div>
 
                   <div className="p-3.5 rounded bg-[#ffffff] border border-[#e2ded5]">

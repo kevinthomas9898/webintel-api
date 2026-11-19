@@ -15,6 +15,7 @@ import {
   FileCode,
   Building,
   Terminal,
+  Phone,
 } from "lucide-react";
 import type { WebIntelScanResult } from "@/lib/schemas/scan";
 
@@ -325,9 +326,21 @@ export function Playground() {
                   <div className="p-4 sm:p-5 rounded-lg bg-[#faf9f6] border border-[#e2ded5] space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded bg-[#0e1014] text-[#f7f6f2] flex items-center justify-center font-mono text-xs font-bold">
-                          <Building className="w-4 h-4 text-[#f7f6f2]" />
-                        </div>
+                        {result.branding?.favicon ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={result.branding.favicon}
+                            alt="Favicon"
+                            className="w-8 h-8 rounded p-1 bg-white border border-[#e2ded5] object-contain"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded bg-[#0e1014] text-[#f7f6f2] flex items-center justify-center font-mono text-xs font-bold">
+                            <Building className="w-4 h-4 text-[#f7f6f2]" />
+                          </div>
+                        )}
                         <div>
                           <h3 className="text-lg font-bold text-[#0e1014]">
                             {result.companyName || "Website Target"}
@@ -369,17 +382,75 @@ export function Playground() {
                         <span>{result.website}</span>
                         <ExternalLink className="w-3 h-3" />
                       </a>
+                      {result.metadata?.canonicalUrl && (
+                        <span className="text-[11px] text-[#828794]">
+                          CANONICAL: {result.metadata.canonicalUrl}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Discovered Deep Pages & Metadata Bar */}
+                    <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#e2ded5] text-[11px] font-mono">
+                      <span className="text-[#828794] pr-1">ROUTING:</span>
                       {result.contactPage && (
                         <a
                           href={result.contactPage}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex items-center gap-1 text-[#0e1014] hover:underline"
+                          className="px-2 py-0.5 rounded bg-[#ffffff] border border-[#dcd7cb] text-[#0e1014] hover:bg-[#ece7dd] flex items-center gap-1"
                         >
-                          <Mail className="w-3.5 h-3.5" />
-                          <span>CONTACT_URL: {result.contactPage}</span>
-                          <ExternalLink className="w-3 h-3" />
+                          <span>Contact</span>
+                          <ExternalLink className="w-2.5 h-2.5 text-[#828794]" />
                         </a>
+                      )}
+                      {result.aboutPage && (
+                        <a
+                          href={result.aboutPage}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2 py-0.5 rounded bg-[#ffffff] border border-[#dcd7cb] text-[#0e1014] hover:bg-[#ece7dd] flex items-center gap-1"
+                        >
+                          <span>About</span>
+                          <ExternalLink className="w-2.5 h-2.5 text-[#828794]" />
+                        </a>
+                      )}
+                      {result.pricingPage && (
+                        <a
+                          href={result.pricingPage}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2 py-0.5 rounded bg-[#fff7ed] border border-[#fed7aa] text-[#c2410c] font-semibold hover:bg-[#ffedd5] flex items-center gap-1"
+                        >
+                          <span>Pricing</span>
+                          <ExternalLink className="w-2.5 h-2.5 text-[#c2410c]" />
+                        </a>
+                      )}
+                      {result.careersPage && (
+                        <a
+                          href={result.careersPage}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2 py-0.5 rounded bg-[#ffffff] border border-[#dcd7cb] text-[#0e1014] hover:bg-[#ece7dd] flex items-center gap-1"
+                        >
+                          <span>Careers</span>
+                          <ExternalLink className="w-2.5 h-2.5 text-[#828794]" />
+                        </a>
+                      )}
+                      {result.blogPage && (
+                        <a
+                          href={result.blogPage}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2 py-0.5 rounded bg-[#ffffff] border border-[#dcd7cb] text-[#0e1014] hover:bg-[#ece7dd] flex items-center gap-1"
+                        >
+                          <span>Blog</span>
+                          <ExternalLink className="w-2.5 h-2.5 text-[#828794]" />
+                        </a>
+                      )}
+                      {result.metadata?.language && (
+                        <span className="px-2 py-0.5 rounded bg-[#f1ede4] text-[#4b4f59] uppercase">
+                          LANG: {result.metadata.language}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -416,12 +487,12 @@ export function Playground() {
                   </div>
 
                   {/* Public Emails & Social Links */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className={`grid grid-cols-1 ${result.phones && result.phones.length > 0 ? "md:grid-cols-3" : "md:grid-cols-2"} gap-4`}>
                     {/* Emails */}
                     <div className="p-4 rounded-lg bg-[#faf9f6] border border-[#e2ded5] space-y-2 font-mono">
                       <div className="flex items-center gap-2 text-xs font-bold uppercase text-[#0e1014]">
                         <Mail className="w-3.5 h-3.5 text-[#047857]" />
-                        <span>Discovered Public Emails ({result.emails.length})</span>
+                        <span>Emails ({result.emails.length})</span>
                       </div>
                       {result.emails.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5">
@@ -436,15 +507,36 @@ export function Playground() {
                           ))}
                         </div>
                       ) : (
-                        <p className="text-xs text-[#828794] italic">No public emails discovered on page.</p>
+                        <p className="text-xs text-[#828794] italic">None discovered.</p>
                       )}
                     </div>
+
+                    {/* Phones (if any) */}
+                    {result.phones && result.phones.length > 0 && (
+                      <div className="p-4 rounded-lg bg-[#faf9f6] border border-[#e2ded5] space-y-2 font-mono">
+                        <div className="flex items-center gap-2 text-xs font-bold uppercase text-[#0e1014]">
+                          <Phone className="w-3.5 h-3.5 text-[#c2410c]" />
+                          <span>Direct Lines ({result.phones.length})</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {result.phones.map((phone) => (
+                            <a
+                              key={phone}
+                              href={`tel:${phone}`}
+                              className="px-2 py-0.5 rounded bg-[#ffffff] border border-[#dcd7cb] text-xs text-[#0e1014] hover:underline"
+                            >
+                              {phone}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Socials */}
                     <div className="p-4 rounded-lg bg-[#faf9f6] border border-[#e2ded5] space-y-2 font-mono">
                       <div className="flex items-center gap-2 text-xs font-bold uppercase text-[#0e1014]">
                         <Globe className="w-3.5 h-3.5 text-[#c2410c]" />
-                        <span>Social Endpoints ({Object.keys(result.socialLinks).length})</span>
+                        <span>Socials ({Object.keys(result.socialLinks).length})</span>
                       </div>
                       {Object.keys(result.socialLinks).length > 0 ? (
                         <div className="flex flex-wrap gap-1.5">
@@ -462,7 +554,7 @@ export function Playground() {
                           ))}
                         </div>
                       ) : (
-                        <p className="text-xs text-[#828794] italic">No social endpoints detected.</p>
+                        <p className="text-xs text-[#828794] italic">No social endpoints.</p>
                       )}
                     </div>
                   </div>

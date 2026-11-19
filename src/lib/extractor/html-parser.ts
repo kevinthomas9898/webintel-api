@@ -10,9 +10,24 @@ export interface ParsedHtmlData {
     all: string[];
   };
   emails: string[];
+  phones: string[];
   socialLinks: Record<string, string>;
   contactPage: string | null;
   aboutPage: string | null;
+  pricingPage: string | null;
+  careersPage: string | null;
+  blogPage: string | null;
+  branding: {
+    favicon: string | null;
+    ogImage: string | null;
+    themeColor: string | null;
+  };
+  metadata: {
+    canonicalUrl: string | null;
+    language: string | null;
+    openGraphType: string | null;
+    twitterSite: string | null;
+  };
   internalLinks: string[];
   externalLinks: string[];
   cleanText: string;
@@ -31,8 +46,18 @@ const COMMON_PLACEHOLDER_EMAILS = new Set([
   "john.doe@example.com",
 ]);
 
-// Email regex that matches standard RFC-compliant addresses and filters image filenames like @2x.png
 const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+
+const JUNK_HEADING_PATTERNS = [
+  /^navigation\s*(menu)?$/i,
+  /^site-wide\s*links$/i,
+  /^footer\s*(links)?$/i,
+  /^search$/i,
+  /^menu$/i,
+  /^cookie\s*(policy|notice|banner)?$/i,
+  /^skip\s*to\s*content$/i,
+  /^table\s*of\s*contents$/i,
+];
 
 export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
   const $ = cheerio.load(html);
@@ -52,11 +77,67 @@ export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
     $('meta[name="twitter:description"]').attr("content")?.trim() ||
     "";
 
-  // 3. Headings H1 & H2
+  // 3. Branding (Favicon, OG Image, Theme Color)
+  let favicon: string | null = null;
+  const rawFavicon =
+    $('link[rel="icon"]').attr("href") ||
+    $('link[rel="shortcut icon"]').attr("href") ||
+    $('link[rel="apple-touch-icon"]').attr("href");
+  if (rawFavicon) {
+    try {
+      favicon = new URL(rawFavicon, baseUrlStr).toString();
+    } catch {
+      favicon = null;
+    }
+  }
+
+  let ogImage: string | null = null;
+  const rawOgImage =
+    $('meta[property="og:image"]').attr("content") ||
+    $('meta[name="twitter:image"]').attr("content");
+  if (rawOgImage) {
+    try {
+      ogImage = new URL(rawOgImage, baseUrlStr).toString();
+    } catch {
+      ogImage = rawOgImage;
+    }
+  }
+
+  const themeColor = $('meta[name="theme-color"]').attr("content")?.trim() || null;
+
+  // 4. Metadata
+  let canonicalUrl: string | null = null;
+  const rawCanonical = $('link[rel="canonical"]').attr("href");
+  if (rawCanonical) {
+    try {
+      canonicalUrl = new URL(rawCanonical, baseUrlStr).toString();
+    } catch {
+      canonicalUrl = null;
+    }
+  }
+
+  const language =
+    $("html").attr("lang")?.trim() ||
+    $('meta[http-equiv="content-language"]').attr("content")?.trim() ||
+    null;
+
+  const openGraphType = $('meta[property="og:type"]').attr("content")?.trim() || null;
+  const twitterSite = $('meta[name="twitter:site"]').attr("content")?.trim() || null;
+
+  // 5. Clean Headings H1 & H2 (filter hidden/sr-only and navigation boilerplates)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isJunkHeading = (text: string, el: any) => {
+    if (!text || text.length < 2 || text.length > 250) return true;
+    const classes = $(el).attr("class") || "";
+    if (classes.includes("sr-only") || classes.includes("visually-hidden")) return true;
+    if ($(el).attr("aria-hidden") === "true") return true;
+    return JUNK_HEADING_PATTERNS.some((p) => p.test(text));
+  };
+
   const h1Set = new Set<string>();
   $("h1").each((_, el) => {
     const text = $(el).text().replace(/\s+/g, " ").trim();
-    if (text && text.length > 1 && text.length < 300) {
+    if (!isJunkHeading(text, el)) {
       h1Set.add(text);
     }
   });
@@ -64,7 +145,7 @@ export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
   const h2Set = new Set<string>();
   $("h2").each((_, el) => {
     const text = $(el).text().replace(/\s+/g, " ").trim();
-    if (text && text.length > 1 && text.length < 300) {
+    if (!isJunkHeading(text, el)) {
       h2Set.add(text);
     }
   });
@@ -73,11 +154,14 @@ export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
   const h2 = Array.from(h2Set);
   const allHeadings = [...h1, ...h2];
 
-  // 4. Links & Contact / About Page Detection
+  // 6. Navigation Pages Discovery & Links
   const internalLinks = new Set<string>();
   const externalLinks = new Set<string>();
   let contactPage: string | null = null;
   let aboutPage: string | null = null;
+  let pricingPage: string | null = null;
+  let careersPage: string | null = null;
+  let blogPage: string | null = null;
 
   $("a[href]").each((_, el) => {
     const href = $(el).attr("href")?.trim();
@@ -87,7 +171,6 @@ export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
 
     try {
       const resolved = new URL(href, baseUrlStr);
-      // Only keep http and https
       if (resolved.protocol !== "http:" && resolved.protocol !== "https:") return;
 
       const urlString = resolved.toString();
@@ -96,7 +179,7 @@ export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
       if (resolved.origin === baseOrigin) {
         internalLinks.add(urlString);
 
-        // Detect Contact Page
+        // Contact Page
         if (!contactPage) {
           if (
             pathLower.includes("contact") ||
@@ -108,15 +191,52 @@ export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
           }
         }
 
-        // Detect About Page
+        // About Page
         if (!aboutPage) {
           if (
             pathLower.includes("about") ||
             anchorText === "about" ||
             anchorText === "about us" ||
-            anchorText === "company"
+            anchorText === "our company"
           ) {
             aboutPage = urlString;
+          }
+        }
+
+        // Pricing Page
+        if (!pricingPage) {
+          if (
+            pathLower.includes("pricing") ||
+            pathLower.includes("plans") ||
+            anchorText === "pricing" ||
+            anchorText === "plans"
+          ) {
+            pricingPage = urlString;
+          }
+        }
+
+        // Careers Page
+        if (!careersPage) {
+          if (
+            pathLower.includes("careers") ||
+            pathLower.includes("jobs") ||
+            anchorText === "careers" ||
+            anchorText === "join us" ||
+            anchorText === "we are hiring"
+          ) {
+            careersPage = urlString;
+          }
+        }
+
+        // Blog Page
+        if (!blogPage) {
+          if (
+            pathLower.includes("blog") ||
+            pathLower.includes("articles") ||
+            anchorText === "blog" ||
+            anchorText === "resources"
+          ) {
+            blogPage = urlString;
           }
         }
       } else {
@@ -127,7 +247,7 @@ export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
     }
   });
 
-  // 5. Social Links Extraction
+  // 7. Social Links Extraction
   const socialLinks: Record<string, string> = {};
   for (const ext of externalLinks) {
     try {
@@ -155,7 +275,7 @@ export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
     }
   }
 
-  // 6. Public Emails Extraction
+  // 8. Public Emails Extraction
   const emailsSet = new Set<string>();
 
   // a) mailto: links
@@ -168,12 +288,10 @@ export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
   });
 
   // b) Text scanning with regex & de-obfuscation
-  // Clone body and remove noisy tags before text extraction
   const $body = cheerio.load(html);
   $body("script, style, noscript, svg, path, iframe, code, pre").remove();
   const rawBodyText = $body("body").text() || html;
 
-  // Search standard email regex
   const matches = rawBodyText.match(EMAIL_REGEX) || [];
   for (const m of matches) {
     const cleaned = m.toLowerCase().trim();
@@ -182,7 +300,6 @@ export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
     }
   }
 
-  // Search de-obfuscated patterns: e.g. "support [at] domain [dot] com" or "contact(at)company.com"
   const deobfuscatedRegex = /([a-zA-Z0-9._%+-]+)\s*(?:\[at\]|\(at\)|@)\s*([a-zA-Z0-9.-]+)\s*(?:\[dot\]|\(dot\)|\.)\s*([a-zA-Z]{2,})/gi;
   let deobMatch;
   while ((deobMatch = deobfuscatedRegex.exec(rawBodyText)) !== null) {
@@ -192,8 +309,26 @@ export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
     }
   }
 
-  // 7. Clean Readable Text Content (for AI agents & LLMs)
-  // Remove navigation and headers if present to isolate core value proposition
+  // 9. Phone Numbers Extraction
+  const phonesSet = new Set<string>();
+  $('a[href^="tel:"]').each((_, el) => {
+    const href = $(el).attr("href") || "";
+    const cleanTel = href.replace(/^tel:/i, "").split("?")[0].trim();
+    if (cleanTel.length >= 7) {
+      phonesSet.add(cleanTel);
+    }
+  });
+
+  const PHONE_REGEX = /(?:\+?1[-. ]?)?\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})\b/g;
+  let phoneMatch;
+  while ((phoneMatch = PHONE_REGEX.exec(rawBodyText)) !== null) {
+    const found = phoneMatch[0].trim();
+    if (found.length >= 10 && found.length <= 16 && !found.startsWith("000")) {
+      phonesSet.add(found);
+    }
+  }
+
+  // 10. Clean Readable Text Content (for AI agents & LLMs)
   $body("nav, header, footer, [role='navigation'], [role='banner'], .nav, .footer, .menu").remove();
   const cleanParagraphs: string[] = [];
   $body("h1, h2, h3, p, li, blockquote").each((_, el) => {
@@ -214,9 +349,24 @@ export function parseHtml(html: string, baseUrlStr: string): ParsedHtmlData {
       all: allHeadings,
     },
     emails: Array.from(emailsSet),
+    phones: Array.from(phonesSet).slice(0, 5),
     socialLinks,
     contactPage,
     aboutPage,
+    pricingPage,
+    careersPage,
+    blogPage,
+    branding: {
+      favicon,
+      ogImage,
+      themeColor,
+    },
+    metadata: {
+      canonicalUrl,
+      language,
+      openGraphType,
+      twitterSite,
+    },
     internalLinks: Array.from(internalLinks),
     externalLinks: Array.from(externalLinks),
     cleanText,
@@ -227,7 +377,6 @@ function isValidEmail(email: string): boolean {
   if (!email || email.length < 5 || email.length > 100) return false;
   if (COMMON_PLACEHOLDER_EMAILS.has(email)) return false;
 
-  // Filter out false positives like file extensions ending in .png, .jpg, .webp
   const lower = email.toLowerCase();
   if (
     lower.endsWith(".png") ||

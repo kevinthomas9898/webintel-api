@@ -5,14 +5,14 @@ import { parseHtml } from "@/lib/extractor/html-parser";
 import { detectTechnologies } from "@/lib/extractor/tech-detector";
 import { extractBusinessIntel } from "@/lib/extractor/business-intel";
 import { convertHtmlToMarkdown } from "@/lib/extractor/markdown-converter";
-import { verifyAgentMonetization } from "@/lib/monetization/gateway";
+import { verifyAgentMonetization, DEFAULT_COST_PER_SCAN_USD } from "@/lib/monetization/gateway";
 
 // MCP Tool Definitions
 const MCP_TOOLS = [
   {
     name: "webintel_scan",
     description:
-      "Performs comprehensive website intelligence reconnaissance on any public URL: extracts technology stack (40+ signatures), verified headings, company description, public emails, and contact pages with full SSRF protection.",
+      "Performs comprehensive website intelligence reconnaissance on any public URL: extracts technology stack (65+ signatures), verified headings, company description, public emails, phones, and navigation pages with full SSRF protection.",
     inputSchema: {
       type: "object",
       properties: {
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
 
       // Handle webintel_tech_detect
       if (toolName === "webintel_tech_detect") {
-        const detected = detectTechnologies($, fetchResult.body, fetchResult.headers);
+        const detected = detectTechnologies(fetchResult.body, fetchResult.headers, $);
         return NextResponse.json({
           jsonrpc: "2.0",
           id,
@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
 
       // Handle webintel_scan (Default full scan)
       const parsedData = parseHtml(fetchResult.body, fetchResult.finalUrl);
-      const detectedTechnologies = detectTechnologies($, fetchResult.body, fetchResult.headers);
+      const detectedTechnologies = detectTechnologies(fetchResult.body, fetchResult.headers, $);
       const businessIntel = extractBusinessIntel(
         fetchResult.body,
         fetchResult.finalUrl,
@@ -232,7 +232,7 @@ export async function GET() {
     tools: MCP_TOOLS,
     monetization: {
       gateway: "Cloudflare Monetization Gateway",
-      pricingPerCallUsd: 0.008,
+      pricingPerCallUsd: DEFAULT_COST_PER_SCAN_USD,
       status: "active",
     },
   });

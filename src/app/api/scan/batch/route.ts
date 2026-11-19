@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
         const $ = cheerio.load(fetchResult.body);
         const parsed = parseHtml(fetchResult.body, fetchResult.finalUrl);
-        const techs = detectTechnologies($, fetchResult.body, fetchResult.headers);
+        const techs = detectTechnologies(fetchResult.body, fetchResult.headers, $);
         const business = extractBusinessIntel(
           fetchResult.body,
           fetchResult.finalUrl,
@@ -71,7 +71,11 @@ export async function POST(req: NextRequest) {
           description: parsed.description,
           technologies: techs.map((t) => t.name),
           emails: parsed.emails,
+          phones: parsed.phones,
           contactPage: parsed.contactPage,
+          aboutPage: parsed.aboutPage,
+          pricingPage: parsed.pricingPage,
+          branding: parsed.branding,
           confidence: business.confidence,
           resolvedIp: fetchResult.resolvedIp,
           latencyMs: fetchResult.responseTimeMs,

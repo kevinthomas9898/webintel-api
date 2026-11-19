@@ -47,7 +47,7 @@ export function CloudflareMonetization() {
               Cloudflare Monetization Gateway &amp; Micropayments
             </h2>
             <p className="mt-1 text-xs sm:text-sm text-[#4b4f59]">
-              Charge AI agents, autonomous crawlers, and LLM swarms automatically per URL scan ($0.008 / scan).
+              Charge AI agents, autonomous crawlers, and LLM swarms automatically per URL scan ($0.005 / scan &bull; 95% cheaper than Clearbit &amp; Firecrawl).
             </p>
           </div>
 
@@ -66,7 +66,7 @@ export function CloudflareMonetization() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-[#0e1014]">HOW MICROPAYMENTS WORK</span>
                 <span className="px-2 py-0.5 rounded bg-[#e6f4ea] text-[#047857] text-[10px] font-bold">
-                  $0.008 / SCAN
+                  $0.005 / SCAN
                 </span>
               </div>
               <p className="text-xs text-[#4b4f59] font-sans leading-relaxed">
@@ -144,7 +144,7 @@ export function CloudflareMonetization() {
                 </div>
                 <div className="flex justify-between">
                   <span>cf-cost-debited:</span>
-                  <span className="text-[#0e1014] font-bold">$0.0080 USD</span>
+                  <span className="text-[#0e1014] font-bold">$0.0050 USD</span>
                 </div>
                 <div className="flex justify-between">
                   <span>extracted-tech-count:</span>

@@ -3,21 +3,18 @@ import { z } from "zod";
 export const ScanRequestSchema = z.object({
   url: z
     .string()
-    .trim()
-    .min(1, { message: "URL cannot be empty" })
-    .max(2048, { message: "URL exceeds maximum length of 2048 characters" })
+    .min(1, "URL is required")
+    .max(2048, "URL is too long")
     .refine(
       (val) => {
         try {
-          const parsed = new URL(val);
-          return parsed.protocol === "http:" || parsed.protocol === "https:";
+          const u = new URL(val);
+          return u.protocol === "http:" || u.protocol === "https:";
         } catch {
           return false;
         }
       },
-      {
-        message: "URL must be a valid HTTP or HTTPS address (e.g. https://example.com)",
-      }
+      { message: "Must be a valid HTTP or HTTPS URL" }
     ),
   deepScan: z.boolean().optional().default(false),
   includeContent: z.boolean().optional().default(true),
@@ -28,7 +25,7 @@ export type ScanRequestInput = z.infer<typeof ScanRequestSchema>;
 
 export interface DetectedTechnology {
   name: string;
-  category: "Framework" | "CMS" | "Analytics" | "Styling" | "Hosting" | "Payments" | "Customer Support" | "Security" | "Other";
+  category: "Framework" | "CMS" | "Analytics" | "Styling" | "Hosting" | "Payments" | "Customer Support" | "Security" | "Auth" | "Other";
   confidence: number;
   detectedFrom: string;
 }
@@ -46,9 +43,24 @@ export interface WebIntelScanResult {
   };
   services: string[];
   emails: string[];
+  phones?: string[];
   socialLinks: Record<string, string>;
   contactPage: string | null;
   aboutPage: string | null;
+  pricingPage?: string | null;
+  careersPage?: string | null;
+  blogPage?: string | null;
+  branding?: {
+    favicon?: string | null;
+    ogImage?: string | null;
+    themeColor?: string | null;
+  };
+  metadata?: {
+    canonicalUrl?: string | null;
+    language?: string | null;
+    openGraphType?: string | null;
+    twitterSite?: string | null;
+  };
   technologies: string[];
   technologiesDetailed?: DetectedTechnology[];
   pagesAnalyzed: string[];

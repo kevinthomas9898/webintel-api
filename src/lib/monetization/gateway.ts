@@ -8,7 +8,7 @@ export interface MonetizationVerification {
   costPerScanUsd: number;
 }
 
-export const DEFAULT_COST_PER_SCAN_USD = 0.008; // $0.008 per scan (8/10th of a cent)
+export const DEFAULT_COST_PER_SCAN_USD = 0.005; // $0.005 per scan (half a cent, optimal for high-volume agent adoption with 98% gross margin)
 
 /**
  * Validates whether the incoming request is authorized either via:

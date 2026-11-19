@@ -14,7 +14,7 @@ interface TechSignature {
 }
 
 const SIGNATURES: TechSignature[] = [
-  // Frameworks
+  // 1. Modern Frameworks & Runtimes
   {
     name: "Next.js",
     category: "Framework",
@@ -67,19 +67,10 @@ const SIGNATURES: TechSignature[] = [
     },
   },
   {
-    name: "Gatsby",
-    category: "Framework",
-    rules: {
-      html: [/___gatsby/, /gatsby-image/],
-      dom: ["#___gatsby"],
-      meta: [{ name: "generator", content: /Gatsby/i }],
-    },
-  },
-  {
     name: "Remix",
     category: "Framework",
     rules: {
-      html: [/window\.__remixContext/],
+      html: [/window\.__remixContext/, /__remixManifest/],
       dom: ["script:contains('__remixContext')"],
     },
   },
@@ -92,24 +83,32 @@ const SIGNATURES: TechSignature[] = [
       meta: [{ name: "generator", content: /Astro/i }],
     },
   },
+  {
+    name: "Gatsby",
+    category: "Framework",
+    rules: {
+      html: [/___gatsby/, /gatsby-image/],
+      dom: ["#___gatsby"],
+      meta: [{ name: "generator", content: /Gatsby/i }],
+    },
+  },
 
-  // CMS & E-Commerce
+  // 2. CMS & Site Builders
   {
     name: "WordPress",
     category: "CMS",
     rules: {
       html: [/wp-content\//, /wp-includes\//],
+      dom: ["link[href*='wp-content']", "script[src*='wp-includes']"],
       meta: [{ name: "generator", content: /WordPress/i }],
-      dom: ["link[href*='wp-content']", "script[src*='wp-content']"],
     },
   },
   {
     name: "Shopify",
     category: "CMS",
     rules: {
-      html: [/cdn\.shopify\.com/, /Shopify\.theme/],
-      scripts: [/cdn\.shopify\.com/i],
-      dom: ["link[href*='cdn.shopify.com']"],
+      html: [/cdn\.shopify\.com/, /Shopify\.theme/, /myshopify\.com/],
+      dom: ["script[src*='cdn.shopify.com']"],
       headers: [{ header: "x-shopid", match: /.+/ }],
     },
   },
@@ -117,16 +116,25 @@ const SIGNATURES: TechSignature[] = [
     name: "Webflow",
     category: "CMS",
     rules: {
-      html: [/data-wf-page/, /data-wf-site/, /assets\.webflow\.com/],
-      dom: ["html[data-wf-page]", "html[data-wf-site]"],
+      html: [/assets\.website-files\.com/, /webflow\.js/, /html\.w-mod-js/],
+      dom: ["html.w-mod-js", "script[src*='webflow.js']"],
       meta: [{ name: "generator", content: /Webflow/i }],
+    },
+  },
+  {
+    name: "Framer",
+    category: "CMS",
+    rules: {
+      html: [/framerusercontent\.com/, /__framer__/, /framer\.com\/m\//],
+      dom: ["div[data-framer-name]", "style[data-framer-css]"],
     },
   },
   {
     name: "Squarespace",
     category: "CMS",
     rules: {
-      html: [/static1\.squarespace\.com/, /squarespace\.com/],
+      html: [/static1\.squarespace\.com/, /static\.squarespace\.com/],
+      dom: ["body.template-index", "link[href*='squarespace.com']"],
       headers: [{ header: "x-servedby", match: /squarespace/i }],
     },
   },
@@ -135,6 +143,7 @@ const SIGNATURES: TechSignature[] = [
     category: "CMS",
     rules: {
       html: [/static\.wixstatic\.com/, /wix-warmup-data/],
+      dom: ["#site-root", "script[src*='wixstatic.com']"],
       headers: [{ header: "x-wix-renderer-server", match: /.+/ }],
     },
   },
@@ -146,15 +155,39 @@ const SIGNATURES: TechSignature[] = [
       meta: [{ name: "generator", content: /Ghost/i }],
     },
   },
+  {
+    name: "Sanity.io",
+    category: "CMS",
+    rules: {
+      html: [/cdn\.sanity\.io/],
+      scripts: [/cdn\.sanity\.io/i],
+    },
+  },
+  {
+    name: "Contentful",
+    category: "CMS",
+    rules: {
+      html: [/images\.ctfassets\.net/, /cdn\.contentful\.com/],
+    },
+  },
+  {
+    name: "Strapi",
+    category: "CMS",
+    rules: {
+      html: [/strapi\.io/],
+      headers: [{ header: "x-powered-by", match: /Strapi/i }],
+    },
+  },
 
-  // Styling & UI Libraries
+  // 3. Styling & UI
   {
     name: "Tailwind CSS",
     category: "Styling",
     rules: {
       html: [
-        /class="[^"]*(?:flex|grid|hidden|relative|absolute|px-|py-|text-sm|rounded-|bg-)[^"]*"/,
+        /class="[^"]*(?:\b(?:flex\s+items-\w+|grid\s+grid-cols-\d+|px-\d+\s+py-\d+|bg-\w+-\d+\s+text-\w+-\d+|space-(?:x|y)-\d+|rounded-(?:md|lg|xl)\s+border)\b)[^"]*"/,
         /cdn\.tailwindcss\.com/,
+        /tailwind(?:\.min)?\.css/,
       ],
     },
   },
@@ -162,26 +195,52 @@ const SIGNATURES: TechSignature[] = [
     name: "Bootstrap",
     category: "Styling",
     rules: {
-      html: [/bootstrap(?:\.min)?\.css/, /class="[^"]*(?:container-fluid|row|col-md-|navbar-expand)/],
+      html: [
+        /bootstrap(?:\.min)?\.css/,
+        /class="[^"]*\b(?:col-(?:xs|sm|md|lg|xl)-\d+|btn-(?:primary|secondary|success|danger)|navbar-expand-(?:sm|md|lg))\b[^"]*"/,
+      ],
       scripts: [/bootstrap(?:\.bundle)?(?:\.min)?\.js/i],
     },
   },
   {
-    name: "Emotion / Styled Components",
+    name: "Framer Motion",
     category: "Styling",
     rules: {
-      dom: ["style[data-emotion]", "style[data-styled]"],
-      html: [/data-emotion/, /data-styled/],
+      html: [/framer-motion/, /data-projection-id/],
+    },
+  },
+  {
+    name: "Radix UI",
+    category: "Styling",
+    rules: {
+      html: [/data-radix-collection-item/, /data-radix-popper-content-wrapper/],
+      dom: ["[data-radix-collection-item]", "[data-radix-popper-content-wrapper]"],
+    },
+  },
+  {
+    name: "Material UI (MUI)",
+    category: "Styling",
+    rules: {
+      html: [/MuiButton-root/, /MuiTypography-root/, /mui-style-/],
+      dom: ["[class*='MuiButton-root']"],
+    },
+  },
+  {
+    name: "Chakra UI",
+    category: "Styling",
+    rules: {
+      html: [/chakra-ui-light/, /chakra-ui-dark/, /css-[a-z0-9]+\.chakra-/],
+      dom: ["[class*='chakra-']"],
     },
   },
 
-  // Analytics
+  // 4. Analytics & Product Observability
   {
-    name: "Google Analytics",
+    name: "Google Analytics 4",
     category: "Analytics",
     rules: {
-      scripts: [/google-analytics\.com\/analytics\.js/i, /googletagmanager\.com\/gtag\/js/i],
-      html: [/gtag\(['"]config['"]/, /ga\(['"]create['"]/],
+      scripts: [/googletagmanager\.com\/gtag\/js/i],
+      html: [/gtag\(['"]config['"]\s*,\s*['"]G-[A-Z0-9]+['"]\)/],
     },
   },
   {
@@ -196,8 +255,8 @@ const SIGNATURES: TechSignature[] = [
     name: "PostHog",
     category: "Analytics",
     rules: {
-      scripts: [/posthog(?:\.min)?\.js/i],
-      html: [/app\.posthog\.com/, /posthog\.init/],
+      scripts: [/posthog(?:\.min)?\.js/i, /app\.posthog\.com/i, /us\.posthog\.com/i, /eu\.posthog\.com/i],
+      html: [/posthog\.init\(/],
     },
   },
   {
@@ -206,6 +265,22 @@ const SIGNATURES: TechSignature[] = [
     rules: {
       scripts: [/cdn\.segment\.com\/analytics\.js/i],
       html: [/analytics\.load\(/],
+    },
+  },
+  {
+    name: "Mixpanel",
+    category: "Analytics",
+    rules: {
+      scripts: [/cdn\.mxpnl\.com/i],
+      html: [/mixpanel\.init\(/],
+    },
+  },
+  {
+    name: "Amplitude",
+    category: "Analytics",
+    rules: {
+      scripts: [/cdn\.amplitude\.com/i],
+      html: [/amplitude\.getInstance\(/],
     },
   },
   {
@@ -223,8 +298,139 @@ const SIGNATURES: TechSignature[] = [
       html: [/hj\(['"]init['"]/],
     },
   },
+  {
+    name: "Microsoft Clarity",
+    category: "Analytics",
+    rules: {
+      scripts: [/clarity\.ms\/tag\//i],
+      html: [/clarity\(['"]set['"]/],
+    },
+  },
+  {
+    name: "FullStory",
+    category: "Analytics",
+    rules: {
+      scripts: [/fullstory\.com\/s\/fs\.js/i],
+      html: [/FS\.identify/],
+    },
+  },
 
-  // Hosting & CDN
+  // 5. Customer Support & Chat
+  {
+    name: "Intercom",
+    category: "Customer Support",
+    rules: {
+      scripts: [/widget\.intercom\.io/i],
+      html: [/Intercom\(['"]boot['"]/],
+    },
+  },
+  {
+    name: "HubSpot",
+    category: "Customer Support",
+    rules: {
+      scripts: [/js\.hs-scripts\.com/i, /js\.hubspot\.com/i],
+      html: [/hbspt\.forms\.create/],
+    },
+  },
+  {
+    name: "Zendesk",
+    category: "Customer Support",
+    rules: {
+      scripts: [/static\.zdassets\.com/i],
+      html: [/zE\('webWidget'/],
+    },
+  },
+  {
+    name: "Crisp Chat",
+    category: "Customer Support",
+    rules: {
+      scripts: [/client\.crisp\.chat/i],
+      html: [/\$crisp\.push/],
+    },
+  },
+  {
+    name: "Drift",
+    category: "Customer Support",
+    rules: {
+      scripts: [/js\.driftt\.com/i],
+    },
+  },
+
+  // 6. Payments & Billing
+  {
+    name: "Stripe",
+    category: "Payments",
+    rules: {
+      scripts: [/js\.stripe\.com/i],
+      html: [/stripe\.com\/v3/, /__stripe/],
+    },
+  },
+  {
+    name: "PayPal",
+    category: "Payments",
+    rules: {
+      scripts: [/paypal\.com\/sdk\/js/i],
+    },
+  },
+  {
+    name: "Lemon Squeezy",
+    category: "Payments",
+    rules: {
+      scripts: [/assets\.lemonsqueezy\.com\/lemon\.js/i],
+      html: [/lemonsqueezy-button/],
+    },
+  },
+  {
+    name: "Paddle",
+    category: "Payments",
+    rules: {
+      scripts: [/cdn\.paddle\.com\/paddle\/paddle\.js/i],
+      html: [/Paddle\.Setup/],
+    },
+  },
+  {
+    name: "Klarna",
+    category: "Payments",
+    rules: {
+      scripts: [/x\.klarnacdn\.net/i],
+    },
+  },
+
+  // 7. Authentication & Identity
+  {
+    name: "Clerk",
+    category: "Auth",
+    rules: {
+      scripts: [/clerk\.browser\.js/i, /clerk\.[a-z0-9]+\.js/i],
+      html: [/window\.__clerk_frontend_api/, /data-clerk/],
+    },
+  },
+  {
+    name: "Auth0",
+    category: "Auth",
+    rules: {
+      scripts: [/cdn\.auth0\.com/i],
+      html: [/auth0\.createAuth0Client/],
+    },
+  },
+  {
+    name: "Supabase",
+    category: "Auth",
+    rules: {
+      scripts: [/supabase-js/i],
+      html: [/supabase\.co/],
+    },
+  },
+  {
+    name: "Firebase",
+    category: "Auth",
+    rules: {
+      scripts: [/firebasejs/i],
+      html: [/firebaseapp\.com/],
+    },
+  },
+
+  // 8. Hosting & Cloud Infrastructure
   {
     name: "Cloudflare",
     category: "Hosting",
@@ -246,105 +452,88 @@ const SIGNATURES: TechSignature[] = [
     },
   },
   {
+    name: "AWS CloudFront",
+    category: "Hosting",
+    rules: {
+      headers: [
+        { header: "x-amz-cf-id", match: /.+/ },
+        { header: "via", match: /cloudfront/i },
+      ],
+    },
+  },
+  {
     name: "Netlify",
     category: "Hosting",
     rules: {
       headers: [
-        { header: "server", match: /Netlify/i },
+        { header: "server", match: /netlify/i },
         { header: "x-nf-request-id", match: /.+/ },
       ],
     },
   },
   {
-    name: "AWS CloudFront",
+    name: "Fastly",
     category: "Hosting",
     rules: {
       headers: [
-        { header: "via", match: /CloudFront/i },
-        { header: "x-amz-cf-id", match: /.+/ },
+        { header: "x-served-by", match: /cache-/i },
+        { header: "fastly-restarts", match: /.+/ },
       ],
     },
   },
-
-  // Payments
   {
-    name: "Stripe",
-    category: "Payments",
+    name: "Akamai",
+    category: "Hosting",
     rules: {
-      scripts: [/js\.stripe\.com\/v3/i],
-      html: [/stripe-elements/, /Stripe\(['"]pk_/],
+      headers: [
+        { header: "x-akamai-transformed", match: /.+/ },
+        { header: "server", match: /AkamaiGHost/i },
+      ],
     },
   },
   {
-    name: "PayPal",
-    category: "Payments",
+    name: "Render",
+    category: "Hosting",
     rules: {
-      scripts: [/paypal\.com\/sdk\/js/i],
-    },
-  },
-
-  // Customer Support
-  {
-    name: "Intercom",
-    category: "Customer Support",
-    rules: {
-      scripts: [/widget\.intercom\.io/i],
-      html: [/window\.Intercom/],
+      headers: [{ header: "render-srv-id", match: /.+/ }],
     },
   },
   {
-    name: "Crisp Chat",
-    category: "Customer Support",
+    name: "Fly.io",
+    category: "Hosting",
     rules: {
-      scripts: [/client\.crisp\.chat/i],
-      html: [/window\.\$crisp/],
-    },
-  },
-  {
-    name: "Zendesk",
-    category: "Customer Support",
-    rules: {
-      scripts: [/static\.zdassets\.com/i],
-      html: [/zE\(['"]webWidget/],
-    },
-  },
-  {
-    name: "HubSpot",
-    category: "Customer Support",
-    rules: {
-      scripts: [/js\.hs-scripts\.com/i, /js\.hubspot\.com/i],
-      html: [/hs-script-loader/],
+      headers: [{ header: "fly-request-id", match: /.+/ }],
     },
   },
 ];
 
 export function detectTechnologies(
-  $: cheerio.CheerioAPI,
   html: string,
-  headers: Record<string, string | string[] | undefined> = {}
+  headers: Record<string, string | string[] | undefined>,
+  $: cheerio.CheerioAPI
 ): DetectedTechnology[] {
   const detected: DetectedTechnology[] = [];
-  const scripts: string[] = [];
 
-  // Extract script srcs
+  // Extract all script src attributes
+  const scripts: string[] = [];
   $("script[src]").each((_, el) => {
     const src = $(el).attr("src");
     if (src) scripts.push(src);
   });
 
-  // Extract meta tags
+  // Extract meta generators
   const metaGenerators: string[] = [];
-  $('meta[name="generator"], meta[name="GENERATOR"]').each((_, el) => {
+  $("meta[name='generator' i], meta[name='Generator' i]").each((_, el) => {
     const content = $(el).attr("content");
     if (content) metaGenerators.push(content);
   });
 
   for (const sig of SIGNATURES) {
     let matched = false;
-    let detectedFrom = "";
-    let confidence = 0.85;
+    let confidence = 0.5;
+    let detectedFrom = "Unknown";
 
-    // 1. Check HTTP Headers
+    // 1. Check HTTP Headers (highest confidence)
     if (sig.rules.headers) {
       for (const rule of sig.rules.headers) {
         const headerVal = headers[rule.header.toLowerCase()];
@@ -410,7 +599,7 @@ export function detectTechnologies(
         if (htmlRule.test(html)) {
           matched = true;
           detectedFrom = `HTML pattern match`;
-          confidence = 0.8;
+          confidence = 0.85;
           break;
         }
       }

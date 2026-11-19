@@ -33,10 +33,10 @@ async function runMonetizationTests() {
     if (data.tools.length < 3) {
       throw new Error(`Expected at least 3 tools, got ${data.tools.length}`);
     }
-    if (data.monetization?.pricingPerCallUsd !== 0.008) {
-      throw new Error(`Expected pricing $0.008, got ${data.monetization?.pricingPerCallUsd}`);
+    if (data.monetization?.pricingPerCallUsd !== 0.005) {
+      throw new Error(`Expected pricing $0.005, got ${data.monetization?.pricingPerCallUsd}`);
     }
-    console.log(`\n    [Verified] MCP Tools: ${data.tools.map(t => t.name).join(", ")}`);
+    console.log(`\n    [Verified] MCP Tools: ${data.tools.map((t) => t.name).join(", ")}`);
   });
 
   // 2. MCP JSON-RPC 2.0 tools/list
@@ -48,8 +48,8 @@ async function runMonetizationTests() {
         jsonrpc: "2.0",
         id: "mcp-test-1",
         method: "tools/list",
-        params: {}
-      })
+        params: {},
+      }),
     });
     if (res.status !== 200) throw new Error(`Expected 200, got ${res.status}`);
     const data = await res.json();
@@ -73,9 +73,9 @@ async function runMonetizationTests() {
         method: "tools/call",
         params: {
           name: "webintel_tech_detect",
-          arguments: { url: "https://example.com" }
-        }
-      })
+          arguments: { url: "https://example.com" },
+        },
+      }),
     });
     if (res.status !== 200) throw new Error(`Expected 200, got ${res.status}`);
     const data = await res.json();
@@ -96,8 +96,8 @@ async function runMonetizationTests() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         url: "https://httpbin.org/html",
-        format: "markdown"
-      })
+        format: "markdown",
+      }),
     });
     if (res.status !== 200) throw new Error(`Expected 200, got ${res.status}`);
     const contentType = res.headers.get("content-type");
@@ -111,19 +111,19 @@ async function runMonetizationTests() {
     console.log(`\n    [Verified] Clean Markdown extracted: ${markdown.length} bytes`);
   });
 
-  // 5. Cloudflare Pay-Per-Crawl Verification Telemetry
-  await test("POST /api/scan with CF-Monetization-Status verified reflects payer telemetry", async () => {
+  // 5. Cloudflare Pay-Per-Crawl Verification Telemetry & New Rich Schema
+  await test("POST /api/scan with CF-Monetization-Status verified reflects payer telemetry and rich intel", async () => {
     const res = await fetch(`${BASE_URL}/api/scan`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "CF-Monetization-Status": "verified",
         "CF-Agent-Payer": "corp_autonomous_agent_772",
-        "CF-Payment-Id": "pay_cf_edge_984321"
+        "CF-Payment-Id": "pay_cf_edge_984321",
       },
       body: JSON.stringify({
-        url: "https://example.com"
-      })
+        url: "https://example.com",
+      }),
     });
     if (res.status !== 200) throw new Error(`Expected 200, got ${res.status}`);
     const data = await res.json();
@@ -133,8 +133,11 @@ async function runMonetizationTests() {
     if (data.monetization?.payer !== "corp_autonomous_agent_772") {
       throw new Error(`Expected payer corp_autonomous_agent_772, got: ${data.monetization?.payer}`);
     }
-    if (data.monetization?.costUsd !== 0.008) {
-      throw new Error(`Expected cost $0.008, got: ${data.monetization?.costUsd}`);
+    if (data.monetization?.costUsd !== 0.005) {
+      throw new Error(`Expected cost $0.005, got: ${data.monetization?.costUsd}`);
+    }
+    if (!data.branding || typeof data.branding !== "object") {
+      throw new Error("Missing branding metadata object");
     }
     console.log(`\n    [Verified] Monetization verified for payer: ${data.monetization.payer}, Cost: $${data.monetization.costUsd}`);
   });
@@ -145,8 +148,8 @@ async function runMonetizationTests() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        urls: ["https://example.com", "https://httpbin.org/html"]
-      })
+        urls: ["https://example.com", "https://httpbin.org/html"],
+      }),
     });
     if (res.status !== 200) throw new Error(`Expected 200, got ${res.status}`);
     const data = await res.json();

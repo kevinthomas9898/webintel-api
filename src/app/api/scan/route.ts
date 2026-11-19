@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
     const $ = cheerio.load(fetchResult.body);
 
     // 7. Technology Detection
-    const detectedTechnologies = detectTechnologies($, fetchResult.body, fetchResult.headers);
+    const detectedTechnologies = detectTechnologies(fetchResult.body, fetchResult.headers, $);
     const techNameList = detectedTechnologies.map((t) => t.name);
 
     // 8. Business Intelligence Extraction
@@ -207,9 +207,15 @@ export async function POST(req: NextRequest) {
       },
       services: businessIntel.services,
       emails: finalEmails,
+      phones: parsedData.phones,
       socialLinks: finalSocialLinks,
       contactPage: finalContactPage,
       aboutPage: finalAboutPage,
+      pricingPage: parsedData.pricingPage,
+      careersPage: parsedData.careersPage,
+      blogPage: parsedData.blogPage,
+      branding: parsedData.branding,
+      metadata: parsedData.metadata,
       technologies: techNameList,
       technologiesDetailed: detectedTechnologies,
       pagesAnalyzed,
