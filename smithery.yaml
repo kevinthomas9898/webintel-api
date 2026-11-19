@@ -1,0 +1,7 @@
+# Smithery.ai MCP Server Configuration
+version: 1
+server:
+  name: "webintel"
+  description: "Deterministic website intelligence, 65+ technology stack detection, and LLM-ready clean markdown extraction."
+  type: "http"
+  url: "https://webintel.find-easy.dev/api/mcp"

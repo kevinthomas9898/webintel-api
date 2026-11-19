@@ -1,0 +1,8 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "name": "webintel",
+  "description": "Deterministic website intelligence, 65+ technology stack signatures, and token-optimized Markdown for AI agents.",
+  "maintainers": [
+    "kevinthomas9898"
+  ]
+}
