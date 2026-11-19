@@ -2,6 +2,7 @@ import React from "react";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { Playground } from "@/components/Playground";
+import { CloudflareMonetization } from "@/components/CloudflareMonetization";
 import { AgentWorkbench } from "@/components/AgentWorkbench";
 import { SsrfSandbox } from "@/components/SsrfSandbox";
 import { TechRadar } from "@/components/TechRadar";
@@ -17,6 +18,7 @@ export default function Home() {
       <Header />
       <Hero />
       <Playground />
+      <CloudflareMonetization />
       <AgentWorkbench />
       <SsrfSandbox />
       <TechRadar />

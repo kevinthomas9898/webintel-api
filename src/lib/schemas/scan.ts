@@ -21,6 +21,7 @@ export const ScanRequestSchema = z.object({
     ),
   deepScan: z.boolean().optional().default(false),
   includeContent: z.boolean().optional().default(true),
+  format: z.enum(["json", "markdown"]).optional().default("json"),
 });
 
 export type ScanRequestInput = z.infer<typeof ScanRequestSchema>;
@@ -57,6 +58,7 @@ export interface WebIntelScanResult {
     servicesAreInferred: boolean;
   };
   textContent?: string;
+  markdown?: string;
   stats: {
     internalLinksCount: number;
     externalLinksCount: number;
@@ -64,6 +66,11 @@ export interface WebIntelScanResult {
     httpStatusCode: number;
     resolvedIp: string;
     contentSizeBytes: number;
+  };
+  monetization?: {
+    gateway: string;
+    payer?: string;
+    costUsd: number;
   };
 }
 

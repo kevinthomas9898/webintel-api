@@ -48,6 +48,9 @@ export function Header() {
             <a href="#matrix" className="hover:text-[#0e1014] transition-colors">
               TECH_RADAR
             </a>
+            <a href="#monetization" className="hover:text-[#0e1014] transition-colors text-[#c2410c] font-semibold">
+              PAY_PER_CRAWL
+            </a>
             <a href="#docs" className="hover:text-[#0e1014] transition-colors flex items-center gap-1.5">
               <Code2 className="w-3.5 h-3.5 text-[#828794]" />
               API_DOCS
@@ -111,6 +114,13 @@ export function Header() {
             className="block px-3 py-2 rounded-md text-[#0e1014] hover:bg-[#ebe6db]"
           >
             &gt; TECH_RADAR
+          </a>
+          <a
+            href="#monetization"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-md text-[#c2410c] font-semibold hover:bg-[#ebe6db]"
+          >
+            &gt; PAY_PER_CRAWL
           </a>
           <a
             href="#docs"

@@ -8,20 +8,31 @@ import { checkRobotsPermission } from "@/lib/security/robots";
 import { parseHtml } from "@/lib/extractor/html-parser";
 import { detectTechnologies } from "@/lib/extractor/tech-detector";
 import { extractBusinessIntel } from "@/lib/extractor/business-intel";
+import { convertHtmlToMarkdown } from "@/lib/extractor/markdown-converter";
+import { verifyAgentMonetization, DEFAULT_COST_PER_SCAN_USD } from "@/lib/monetization/gateway";
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
 
-  // 1. Extract Client IP & Check Rate Limiting
+  // 1. Verify Monetization / Cloudflare Gateway Verification
+  const monetization = verifyAgentMonetization(req, { allowFreePreview: true });
+
+  // 2. Extract Client IP & Check Rate Limiting
   const forwarded = req.headers.get("x-forwarded-for");
   const clientIp = forwarded ? forwarded.split(",")[0].trim() : "127.0.0.1";
 
   const rateCheck = checkRateLimit(clientIp, 45, 60 * 1000);
-  const rateHeaders = {
+  const responseHeaders: Record<string, string> = {
     "X-RateLimit-Limit": String(rateCheck.limit),
     "X-RateLimit-Remaining": String(rateCheck.remaining),
     "X-RateLimit-Reset": String(Math.ceil(rateCheck.resetMs / 1000)),
+    "X-Monetization-Cost-Usd": String(DEFAULT_COST_PER_SCAN_USD),
+    "X-Monetization-Gateway": "Cloudflare Monetization Gateway",
   };
+
+  if (monetization.agentPayer) {
+    responseHeaders["X-Agent-Payer"] = monetization.agentPayer;
+  }
 
   if (!rateCheck.success) {
     return NextResponse.json(
@@ -35,14 +46,14 @@ export async function POST(req: NextRequest) {
       {
         status: 429,
         headers: {
-          ...rateHeaders,
+          ...responseHeaders,
           "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)),
         },
       }
     );
   }
 
-  // 2. Parse & Validate JSON Body
+  // 3. Parse & Validate JSON Body
   let bodyJson: unknown;
   try {
     bodyJson = await req.json();
@@ -55,7 +66,7 @@ export async function POST(req: NextRequest) {
           message: "Request body must be valid JSON.",
         },
       },
-      { status: 400, headers: rateHeaders }
+      { status: 400, headers: responseHeaders }
     );
   }
 
@@ -76,14 +87,14 @@ export async function POST(req: NextRequest) {
           details: errorDetails,
         },
       },
-      { status: 400, headers: rateHeaders }
+      { status: 400, headers: responseHeaders }
     );
   }
 
-  const { url, deepScan, includeContent } = parseResult.data;
+  const { url, deepScan, includeContent, format } = parseResult.data;
 
   try {
-    // 3. Check robots.txt Compliance
+    // 4. Check robots.txt Compliance
     const robotsCheck = await checkRobotsPermission(url);
     if (!robotsCheck.allowed) {
       return NextResponse.json(
@@ -94,11 +105,11 @@ export async function POST(req: NextRequest) {
             message: robotsCheck.reason || "Scanning this URL is disallowed by site robots.txt policy.",
           },
         },
-        { status: 403, headers: rateHeaders }
+        { status: 403, headers: responseHeaders }
       );
     }
 
-    // 4. Safe Fetch Target Web Page (SSRF guarded, IP pinned, redirect verified)
+    // 5. Safe Fetch Target Web Page (SSRF guarded, IP pinned, redirect verified)
     const fetchResult = await safeFetch(url, {
       timeoutMs: 8000,
       maxSizeBytes: 2.5 * 1024 * 1024,
@@ -107,15 +118,27 @@ export async function POST(req: NextRequest) {
 
     const pagesAnalyzed = [fetchResult.finalUrl];
 
-    // 5. Parse Main Page with Cheerio
+    // If caller explicitly requested pure markdown format for LLM reasoning:
+    const markdownContent = convertHtmlToMarkdown(fetchResult.body);
+    if (format === "markdown") {
+      return new NextResponse(markdownContent, {
+        status: 200,
+        headers: {
+          ...responseHeaders,
+          "Content-Type": "text/markdown; charset=utf-8",
+        },
+      });
+    }
+
+    // 6. Parse Main Page with Cheerio
     const parsedData = parseHtml(fetchResult.body, fetchResult.finalUrl);
     const $ = cheerio.load(fetchResult.body);
 
-    // 6. Technology Detection
+    // 7. Technology Detection
     const detectedTechnologies = detectTechnologies($, fetchResult.body, fetchResult.headers);
     const techNameList = detectedTechnologies.map((t) => t.name);
 
-    // 7. Business Intelligence Extraction
+    // 8. Business Intelligence Extraction
     const businessIntel = extractBusinessIntel(
       fetchResult.body,
       fetchResult.finalUrl,
@@ -129,7 +152,7 @@ export async function POST(req: NextRequest) {
     const finalEmails = [...parsedData.emails];
     const finalSocialLinks = { ...parsedData.socialLinks };
 
-    // 8. Optional Safe Deep Scan (Inspects Contact or About page if found, strictly on same origin)
+    // 9. Optional Safe Deep Scan (Inspects Contact or About page if found, strictly on same origin)
     if (deepScan && (finalContactPage || finalAboutPage)) {
       const secondaryTarget = finalContactPage || finalAboutPage;
       if (secondaryTarget) {
@@ -141,12 +164,11 @@ export async function POST(req: NextRequest) {
           if (secondaryOrigin === rootOrigin) {
             const secondaryFetch = await safeFetch(secondaryTarget, {
               timeoutMs: 4000,
-              maxSizeBytes: 512 * 1024, // 512 KB
+              maxSizeBytes: 512 * 1024,
               maxRedirects: 2,
             });
 
             pagesAnalyzed.push(secondaryFetch.finalUrl);
-
             const secondaryParsed = parseHtml(secondaryFetch.body, secondaryFetch.finalUrl);
 
             // Merge secondary emails
@@ -171,7 +193,7 @@ export async function POST(req: NextRequest) {
 
     const totalResponseTimeMs = Date.now() - startTime;
 
-    // 9. Assemble Structured Standard Response
+    // 10. Assemble Structured Standard Response
     const responseData: WebIntelScanResult = {
       success: true,
       website: fetchResult.finalUrl,
@@ -197,6 +219,7 @@ export async function POST(req: NextRequest) {
         servicesAreInferred: businessIntel.servicesAreInferred,
       },
       textContent: includeContent ? parsedData.cleanText.slice(0, 1500) : undefined,
+      markdown: markdownContent,
       stats: {
         internalLinksCount: parsedData.internalLinks.length,
         externalLinksCount: parsedData.externalLinks.length,
@@ -205,12 +228,17 @@ export async function POST(req: NextRequest) {
         resolvedIp: fetchResult.resolvedIp,
         contentSizeBytes: Buffer.byteLength(fetchResult.body, "utf-8"),
       },
+      monetization: {
+        gateway: "Cloudflare Monetization Gateway",
+        payer: monetization.agentPayer,
+        costUsd: DEFAULT_COST_PER_SCAN_USD,
+      },
     };
 
     return NextResponse.json(responseData, {
       status: 200,
       headers: {
-        ...rateHeaders,
+        ...responseHeaders,
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
       },
     });
@@ -224,11 +252,10 @@ export async function POST(req: NextRequest) {
             message: error.message,
           },
         },
-        { status: error.statusCode, headers: rateHeaders }
+        { status: error.statusCode, headers: responseHeaders }
       );
     }
 
-    // Generic safe error message (no leaked stack traces)
     const errMessage = error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
       {
@@ -238,7 +265,7 @@ export async function POST(req: NextRequest) {
           message: `Failed to scan website: ${errMessage}`,
         },
       },
-      { status: 500, headers: rateHeaders }
+      { status: 500, headers: responseHeaders }
     );
   }
 }

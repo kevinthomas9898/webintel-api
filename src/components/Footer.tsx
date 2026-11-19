@@ -54,6 +54,11 @@ export function Footer() {
                 </a>
               </li>
               <li>
+                <a href="#monetization" className="hover:text-[#0e1014] transition-colors text-[#c2410c] font-semibold">
+                  &gt; PAY_PER_CRAWL_GATEWAY
+                </a>
+              </li>
+              <li>
                 <a href="#docs" className="hover:text-[#0e1014] transition-colors">
                   &gt; API_SPECIFICATION
                 </a>
