@@ -1,14 +1,57 @@
-# WebIntel API
+# WebIntel API & MCP Server
 
 **Autonomous Website Intelligence for AI Agents & LLM Toolchains**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16%20(App%20Router)-black.svg)](https://nextjs.org/)
-[![Cheerio](https://img.shields.io/badge/Cheerio-1.0-orange.svg)](https://cheerio.js.org/)
+[![MCP Server](https://img.shields.io/badge/MCP-2024--11--05-purple.svg)](https://modelcontextprotocol.io/)
+[![Glama Verified](https://img.shields.io/badge/Glama-Verified%20Connector-10b981.svg)](https://glama.ai/mcp/connectors/app.vercel.webintel-apis/webintel)
 [![SSRF Armor](https://img.shields.io/badge/SSRF%20Defense-RFC--1918%20%7C%20IP%20Pinned-emerald.svg)](#security--ssrf-protections)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-WebIntel API is a website intelligence scanner designed specifically for AI agents, LLM pipelines (LangChain, CrewAI, AutoGen), and automated SDR workflows. Submit any public URL and receive clean, structured, factual JSON containing tech stacks, company summaries, semantic headings, public emails, social profiles, and confidence metrics—guaranteed zero fabrication.
+WebIntel API is an enterprise website intelligence and technical reconnaissance suite engineered specifically for autonomous AI agents, LLM pipelines (LangChain, CrewAI, AutoGen), and automated SDR workflows. Features full Model Context Protocol (MCP) support with 8 production tools, multi-tier SSRF defense, socket IP pinning, and mathematical confidence metrics.
+
+---
+
+## ⚡ Model Context Protocol (MCP) Server
+
+Connect your autonomous agent, Claude Desktop, Cursor, or LangChain pipeline directly to the hosted WebIntel MCP server via Streamable HTTP:
+
+```
+Endpoint URL: https://webintel-apis.vercel.app/api/mcp
+Protocol:     MCP 2024-11-05 (JSON-RPC 2.0)
+Auth:         Public Evaluation (None required) / Bearer API Key
+```
+
+### 8 Production MCP Tools
+
+| Tool | Capability | Typical Latency |
+|---|---|---|
+| `webintel_scan` | Full 360° company reconnaissance (tech stack, contacts, social links, business profile) | 1.5s - 3.5s |
+| `webintel_dns_intel` | DNS records, corporate mail provider (Google Workspace vs M365), nameservers, SPF | 150ms - 350ms |
+| `webintel_tech_detect` | Fast 65+ technology stack detection across frameworks, CMS, analytics, payments | 500ms - 1.2s |
+| `webintel_markdown` | Token-optimized, noise-free Markdown extraction stripped of navbars and cookie banners | 600ms - 1.8s |
+| `webintel_seo_meta` | Open Graph social cards, Twitter cards, and parsed Schema.org JSON-LD entities | 500ms - 1.5s |
+| `webintel_links` | Complete internal/external hyperlink graph and navigation topology breakdown | 600ms - 2.0s |
+| `webintel_headers` | HTTP response headers with automated security posture score and A-F grading | 300ms - 900ms |
+| `webintel_robots` | robots.txt crawler directive analysis, path permissions, and XML sitemap locator | 200ms - 800ms |
+
+### Connecting via Claude Desktop
+
+Add this configuration snippet to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "webintel": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch", "https://webintel-apis.vercel.app/api/mcp"]
+    }
+  }
+}
+```
+
+Or connect directly through the [Glama MCP Directory](https://glama.ai/mcp/connectors/app.vercel.webintel-apis/webintel).
 
 ---
 
