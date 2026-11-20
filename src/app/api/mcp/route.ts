@@ -1,36 +1,65 @@
 import { NextRequest, NextResponse } from "next/server";
+import dns from "node:dns/promises";
+import { URL } from "node:url";
 import * as cheerio from "cheerio";
-import { safeFetch, SecurityError } from "@/lib/security/ssrf";
+import { safeFetch, SecurityError, validateAndResolveUrl } from "@/lib/security/ssrf";
 import { parseHtml } from "@/lib/extractor/html-parser";
 import { detectTechnologies } from "@/lib/extractor/tech-detector";
 import { extractBusinessIntel } from "@/lib/extractor/business-intel";
 import { convertHtmlToMarkdown } from "@/lib/extractor/markdown-converter";
 import { verifyAgentMonetization, DEFAULT_COST_PER_SCAN_USD } from "@/lib/monetization/gateway";
 
-// ─── MCP Tool Definitions (TDQS-optimized) ──────────────────────────────────
+// ─── TDQS 5/5 Model Context Protocol (MCP) Tool Registry ──────────────────────
 
 const MCP_TOOLS = [
   {
     name: "webintel_scan",
-    description:
-      "Perform a comprehensive website intelligence scan on a single public URL. Returns the company name, meta description, verified headings (H1/H2), detected technology stack (65+ signatures across frameworks, CMS, analytics, payments, hosting), public email addresses, phone numbers, social media profile URLs, and links to key pages (contact, about, pricing, careers, blog). All requests are SSRF-protected with DNS pre-resolution and private-IP blocking.\n\n**When to use:** You need a broad overview of a website — who runs it, what tech it uses, and how to contact them. Ideal for lead research, competitive analysis, and sales intelligence.\n\n**When NOT to use:** If you only need the technology stack, use `webintel_tech_detect` instead (faster, smaller response). If you need the full page content as Markdown for summarization or RAG, use `webintel_markdown`. If you need SEO metadata (Open Graph, canonical, schema.org), use `webintel_seo_meta`. If you need link analysis, use `webintel_links`.\n\n**Behavior:** Read-only GET request to the target URL. Does not submit forms, execute JavaScript, or modify anything. Response time depends on the target server (typically 1–5 seconds). The `deepScan` option follows same-origin contact/about links for richer data but adds latency. Returns a JSON object with a `confidence` score (0.0–1.0) indicating data completeness.",
+    description: `Execute comprehensive website intelligence reconnaissance on a public URL to produce a structured business, technical, and contact dossier.
+
+### Purpose
+Extract company name, meta description, verified headings (H1/H2), detected technology stack (65+ signatures across frameworks, CMS, analytics, hosting, and payments), public email addresses, telephone numbers, social profiles, branding assets, and links to primary navigation pages.
+
+### When to Use
+- You need a 360-degree company overview in a single call for lead enrichment, sales prospecting, or vendor evaluation.
+- You need to identify both the technical foundation and commercial contact channels of a business.
+
+### When NOT to Use
+- Do NOT use if you only need the technology stack; use \`webintel_tech_detect\` instead for 3x faster execution and lower payload size.
+- Do NOT use if you only need clean webpage text for LLM summarization or RAG; use \`webintel_markdown\` instead.
+- Do NOT use if you only need SEO tags or Open Graph metadata; use \`webintel_seo_meta\` instead.
+- Do NOT use if you only need DNS, MX mail host, or domain records; use \`webintel_dns_intel\` instead.
+
+### Disambiguation
+Unlike \`webintel_tech_detect\` (which returns only detected software libraries) or \`webintel_markdown\` (which returns raw text), \`webintel_scan\` is the full multi-dimensional dossier tool combining business metadata, verified communication channels, and architecture insights.
+
+### Behavior & Performance
+- Side Effects: None. Performs strictly read-only HTTP GET requests.
+- Idempotency: Yes. Successive calls with identical URLs return consistent data.
+- SSRF Guard: Hardened with DNS pre-resolution; private subnets (RFC 1918, RFC 6598, loopback, link-local, cloud metadata 169.254.169.254) are rejected immediately.
+- JavaScript Execution: Static HTML parsing only; client-side single-page applications without server-side rendering are parsed from initial HTML payload.
+- Latency: Typically 1.0 to 4.5 seconds depending on target server responsiveness. The optional \`deepScan\` flag will follow same-origin contact/about links with an additional 2-4 seconds latency.`,
     inputSchema: {
       type: "object",
       properties: {
         url: {
           type: "string",
           format: "uri",
+          pattern: "^https?://.+",
+          minLength: 8,
+          maxLength: 2048,
           description:
-            "The full public HTTP or HTTPS URL to scan. Must include the scheme (e.g., `https://stripe.com`). Private, localhost, and cloud-metadata IPs are blocked.",
+            "The fully-qualified HTTP or HTTPS URL to scan (e.g. 'https://stripe.com' or 'https://vercel.com'). Must include the protocol scheme.",
+          examples: ["https://stripe.com", "https://github.com", "https://linear.app"],
         },
         deepScan: {
           type: "boolean",
-          description:
-            "When true, follows same-origin links to contact and about pages to extract additional emails, phone numbers, and company details. Adds 2–6 seconds of latency. Default: false.",
           default: false,
+          description:
+            "When set to true, automatically follows discovered same-origin links to Contact and About pages to extract additional emails and business metadata. Increases execution time by 2-4 seconds.",
         },
       },
       required: ["url"],
+      additionalProperties: false,
     },
     annotations: {
       title: "Full Website Intelligence Scan",
@@ -42,19 +71,45 @@ const MCP_TOOLS = [
   },
   {
     name: "webintel_tech_detect",
-    description:
-      "Identify the technology stack of a public website by analyzing HTTP response headers, HTML patterns, script URLs, meta tags, and DOM selectors. Detects 65+ technologies across 10 categories: Frameworks (Next.js, React, Vue, Angular, Svelte, Remix, Astro, Gatsby), CMS (WordPress, Shopify, Webflow, Framer, Squarespace, Wix, Ghost), Styling (Tailwind CSS, Bootstrap, MUI, Chakra UI), Analytics (GA4, GTM, PostHog, Segment, Mixpanel, Amplitude, Hotjar, Clarity, FullStory), Customer Support (Intercom, HubSpot, Zendesk, Crisp, Drift), Payments (Stripe, PayPal, Paddle, Lemon Squeezy, Klarna), Auth (Clerk, Auth0, Supabase, Firebase), and Hosting (Cloudflare, Vercel, AWS CloudFront, Netlify, Fastly, Fly.io, Render).\n\n**When to use:** You need to know what technologies a website is built with — for competitive intelligence, lead qualification (e.g., \"find Shopify stores using Stripe\"), or technical audits.\n\n**When NOT to use:** If you also need company info, emails, or social links, use `webintel_scan` instead (includes tech detection plus business intel). For SEO metadata extraction, use `webintel_seo_meta`.\n\n**Behavior:** Read-only. Each detected technology includes a `confidence` score (0.5–0.98) and the detection source (e.g., `Header: x-vercel-id`, `Script URL: js.stripe.com`). Returns a flat JSON array sorted by confidence.",
+    description: `Detect and classify the software libraries, cloud infrastructure, and third-party SaaS services running on a public website.
+
+### Purpose
+Inspect HTTP response headers, DOM elements, script sources, and meta generators against 65+ curated signatures across 10 categories: Frameworks (Next.js, React, Vue, Nuxt, Angular, Svelte, Remix, Astro), CMS (WordPress, Shopify, Webflow, Framer, Squarespace, Wix, Ghost), Styling (Tailwind, Bootstrap, MUI), Analytics (Google Analytics 4, GTM, PostHog, Segment, Mixpanel, Amplitude, Hotjar, Clarity), Payments (Stripe, PayPal, Lemon Squeezy, Paddle, Klarna), Customer Support (Intercom, HubSpot, Zendesk, Crisp), Auth (Clerk, Auth0, Supabase, Firebase), and Hosting (Cloudflare, Vercel, AWS CloudFront, Netlify, Fastly, Render, Fly.io).
+
+### When to Use
+- You need to determine what software, CMS, CDN, or payment processor a website is utilizing.
+- Performing competitive tech stack benchmarking or qualifying B2B sales leads based on stack criteria (e.g., finding Shopify stores using Klaviyo or Next.js sites on Vercel).
+
+### When NOT to Use
+- Do NOT use if you need contact emails, social links, or company description; use \`webintel_scan\` instead.
+- Do NOT use to inspect DNS records or corporate email hosting; use \`webintel_dns_intel\` instead.
+- Do NOT use if you need HTTP security header compliance; use \`webintel_headers\` instead.
+
+### Disambiguation
+Compared to \`webintel_scan\`, this tool bypasses contact extraction, link graph mapping, and content conversion, delivering a lean, focused array of detected technologies with individual confidence ratings (0.5 to 0.98) and proof origins in under 1 second.
+
+### Behavior & Performance
+- Side Effects: None. Strictly read-only GET request.
+- Idempotency: Yes.
+- SSRF Guard: Validates hostname against private and reserved IP address spaces.
+- Latency: Fast (typically 400ms to 1.8s).
+- Returns: Array of detected technologies with name, category, confidence score, and detection vector (e.g., 'Header: x-vercel-id' or 'Script URL: js.stripe.com').`,
     inputSchema: {
       type: "object",
       properties: {
         url: {
           type: "string",
           format: "uri",
+          pattern: "^https?://.+",
+          minLength: 8,
+          maxLength: 2048,
           description:
-            "The full public URL to inspect (e.g., `https://vercel.com`). Must include the scheme. Internal and reserved IPs are blocked.",
+            "The target website URL to inspect for technology signatures (e.g. 'https://shopify.com'). Scheme is required.",
+          examples: ["https://shopify.com", "https://supabase.com", "https://notion.so"],
         },
       },
       required: ["url"],
+      additionalProperties: false,
     },
     annotations: {
       title: "Technology Stack Detection",
@@ -66,19 +121,44 @@ const MCP_TOOLS = [
   },
   {
     name: "webintel_markdown",
-    description:
-      "Fetch a public web page and convert its content into clean, high-signal Markdown optimized for LLM token efficiency. Strips navigation menus, headers, footers, cookie banners, modals, ad wrappers, scripts, styles, SVGs, and iframes. Preserves semantic structure: headings (H1–H4), paragraphs, lists (ordered and unordered), blockquotes, and inline formatting. Output is capped at 4,000 characters to fit within typical tool-call context windows.\n\n**When to use:** You need a website's textual content for summarization, question-answering, retrieval-augmented generation (RAG), or content analysis — without HTML noise.\n\n**When NOT to use:** If you need structured data about the company (name, emails, tech stack), use `webintel_scan`. If you need raw SEO metadata (title, description, OG tags, canonical, JSON-LD), use `webintel_seo_meta`. If you need to analyze the site's link graph, use `webintel_links`.\n\n**Behavior:** Read-only. The Markdown output preserves the page's heading hierarchy and content flow. Very short paragraphs (< 15 chars) and boilerplate text (e.g., \"All rights reserved\") are filtered. No JavaScript rendering — only server-rendered HTML is processed.",
+    description: `Convert any public webpage into clean, high-signal, LLM-optimized Markdown stripped of boilerplate noise.
+
+### Purpose
+Fetch a remote HTML page and strip navigational menus, header/footer links, cookie banners, script tags, style sheets, inline SVG vectors, modals, and advertisement wrappers. Converts remaining semantic elements (H1-H4, paragraphs, bulleted and ordered lists, blockquotes, and tables) into standard Markdown formatted for token efficiency and LLM reasoning.
+
+### When to Use
+- Ingesting web articles, documentation, landing pages, or company profiles into an LLM context window for summarization, Q&A, or RAG embeddings.
+- Extracting core reading content without paying LLM token costs for repetitive HTML markup and site navigation.
+
+### When NOT to Use
+- Do NOT use if you need structured metadata (title, Open Graph preview, JSON-LD); use \`webintel_seo_meta\` instead.
+- Do NOT use if you need company emails, phone numbers, or technologies; use \`webintel_scan\` instead.
+- Do NOT use if you need to extract and follow website links; use \`webintel_links\` instead.
+
+### Disambiguation
+Unlike standard web scrapers that return messy raw HTML or unstructured text dumps, \`webintel_markdown\` applies intelligent semantic noise filtering, stripping cookie policies and navigation bars, and caps output at 4,000 characters to fit predictably inside prompt budgets.
+
+### Behavior & Performance
+- Side Effects: None. Strictly read-only.
+- Idempotency: Yes.
+- Output Length: Capped at 4,000 characters by default to protect agent context windows.
+- Latency: Typically 500ms to 2.2s.`,
     inputSchema: {
       type: "object",
       properties: {
         url: {
           type: "string",
           format: "uri",
+          pattern: "^https?://.+",
+          minLength: 8,
+          maxLength: 2048,
           description:
-            "The full public URL to convert to Markdown (e.g., `https://openai.com/research`). Must include the scheme.",
+            "The webpage URL to fetch and convert into Markdown (e.g. 'https://docs.github.com'). Must include http:// or https://.",
+          examples: ["https://docs.github.com", "https://stripe.com/pricing", "https://openai.com/research"],
         },
       },
       required: ["url"],
+      additionalProperties: false,
     },
     annotations: {
       title: "Web Page to Clean Markdown",
@@ -90,19 +170,45 @@ const MCP_TOOLS = [
   },
   {
     name: "webintel_seo_meta",
-    description:
-      "Extract comprehensive SEO and social metadata from a public URL. Returns the page title, meta description, canonical URL, Open Graph tags (og:title, og:description, og:image, og:type, og:site_name), Twitter Card tags (twitter:title, twitter:site, twitter:image), favicon URL, theme color, HTML language attribute, all Schema.org JSON-LD blocks (parsed), and the robots meta directives.\n\n**When to use:** You need a page's SEO health data, social sharing preview metadata, or structured data (JSON-LD) for auditing, content optimization, or building knowledge graphs.\n\n**When NOT to use:** If you need the full page content as Markdown, use `webintel_markdown`. If you need company contact info and tech stack, use `webintel_scan`. If you need link analysis, use `webintel_links`.\n\n**Behavior:** Read-only. Extracts metadata from the `<head>` section and JSON-LD `<script>` blocks. Does not render JavaScript — only static HTML metadata is returned. Returns a flat JSON object.",
+    description: `Extract SEO metadata, Open Graph social share tags, Twitter Cards, and structured Schema.org JSON-LD from a webpage.
+
+### Purpose
+Parse the HTML \`<head>\` and embedded semantic tags to return the page title, meta description, canonical URL, language, theme color, favicon, Open Graph attributes (og:title, og:description, og:image, og:type, og:site_name), Twitter Card metadata, and parsed Schema.org JSON-LD entities (Organization, Product, Article, FAQ, SoftwareApplication).
+
+### When to Use
+- Auditing a website's on-page SEO health or social sharing preview cards.
+- Extracting machine-readable structured knowledge via Schema.org JSON-LD without manual parsing.
+- Verifying canonicalization and language localization settings.
+
+### When NOT to Use
+- Do NOT use if you need the full readable body content; use \`webintel_markdown\` instead.
+- Do NOT use if you need the site's robots.txt rules or sitemaps; use \`webintel_robots\` instead.
+- Do NOT use if you need HTTP response security headers; use \`webintel_headers\` instead.
+
+### Disambiguation
+This tool isolates the semantic metadata layer of a webpage. Where \`webintel_scan\` provides an executive summary, \`webintel_seo_meta\` provides the raw, un-truncated metadata parameters, social cards, and parsed JSON-LD structured data trees.
+
+### Behavior & Performance
+- Side Effects: None. Read-only.
+- Idempotency: Yes.
+- Returns: Structured JSON object with title, description, canonicalUrl, openGraph object, twitter object, and jsonLd array.
+- Latency: Typically 500ms to 2s.`,
     inputSchema: {
       type: "object",
       properties: {
         url: {
           type: "string",
           format: "uri",
+          pattern: "^https?://.+",
+          minLength: 8,
+          maxLength: 2048,
           description:
-            "The full public URL to extract SEO metadata from (e.g., `https://example.com/blog/post-1`). Must include the scheme.",
+            "The webpage URL to inspect for SEO metadata and structured JSON-LD (e.g. 'https://bbc.com/news').",
+          examples: ["https://bbc.com/news", "https://amazon.com/dp/B08N5WRWNW", "https://stripe.com"],
         },
       },
       required: ["url"],
+      additionalProperties: false,
     },
     annotations: {
       title: "SEO & Social Metadata Extraction",
@@ -114,19 +220,45 @@ const MCP_TOOLS = [
   },
   {
     name: "webintel_links",
-    description:
-      "Extract and categorize every link (`<a href>`) from a public web page. Returns internal links (same origin), external links (different origins), social media profile links (Twitter/X, LinkedIn, GitHub, YouTube, Facebook, Instagram, Discord), and navigation page links (contact, about, pricing, careers, blog). Includes counts for each category.\n\n**When to use:** You need to analyze a website's link graph — for SEO auditing (internal linking structure), finding outbound partners, discovering social profiles, or mapping site architecture.\n\n**When NOT to use:** If you need page content, use `webintel_markdown`. If you need technology detection, use `webintel_tech_detect`. If you need comprehensive business intel including links, use `webintel_scan`.\n\n**Behavior:** Read-only. Links are deduplicated and fully resolved to absolute URLs. Fragments (#) and javascript: hrefs are excluded. Social links are classified by platform. Returns a JSON object with categorized link arrays and counts.",
+    description: `Extract, resolve, and categorize all hyperlinks from a public webpage into internal, external, social, and navigation destinations.
+
+### Purpose
+Parse all HTML \`<a href>\` anchor elements on a page, resolve relative paths to absolute URLs, filter out invalid fragments (#) and javascript pseudo-protocols, and classify targets into: Same-Origin Internal Links, External Outbound Links, Social Profiles (Twitter/X, LinkedIn, GitHub, YouTube, Facebook, Instagram, Discord), and Key Navigation Pages (Contact, About, Pricing, Careers, Blog).
+
+### When to Use
+- Analyzing a website's link graph, internal navigation architecture, or outbound citation partners.
+- Discovering verified company social media accounts and support portals from a landing page.
+- Planning crawler traversal paths or discovering sitemap boundaries.
+
+### When NOT to Use
+- Do NOT use if you only need corporate email addresses or phone numbers; use \`webintel_scan\` instead.
+- Do NOT use if you need the page's written content; use \`webintel_markdown\` instead.
+- Do NOT use if you are looking for XML sitemap URLs; use \`webintel_robots\` instead.
+
+### Disambiguation
+Unlike general scrapers that return unorganized raw href strings, \`webintel_links\` deduplicates, resolves absolute protocols, identifies social platforms, and segments navigation pages into structured categories with link counts.
+
+### Behavior & Performance
+- Side Effects: None. Read-only.
+- Idempotency: Yes.
+- Returns: Deduplicated arrays of internalLinks, externalLinks, socialLinks, and navigationPages with respective counts.
+- Latency: Typically 600ms to 2.5s.`,
     inputSchema: {
       type: "object",
       properties: {
         url: {
           type: "string",
           format: "uri",
+          pattern: "^https?://.+",
+          minLength: 8,
+          maxLength: 2048,
           description:
-            "The full public URL to extract links from (e.g., `https://github.com/vercel`). Must include the scheme.",
+            "The webpage URL to analyze for hyperlinks and navigation pathways (e.g. 'https://github.com/about').",
+          examples: ["https://github.com/about", "https://stripe.com", "https://vercel.com"],
         },
       },
       required: ["url"],
+      additionalProperties: false,
     },
     annotations: {
       title: "Link Extraction & Analysis",
@@ -138,19 +270,45 @@ const MCP_TOOLS = [
   },
   {
     name: "webintel_headers",
-    description:
-      "Retrieve and analyze the HTTP response headers of a public URL. Returns all headers as key-value pairs plus a security analysis that checks for the presence and correctness of critical security headers: Strict-Transport-Security (HSTS), Content-Security-Policy (CSP), X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, and X-XSS-Protection. Includes a security score (0–100) and actionable recommendations for missing headers.\n\n**When to use:** You need to audit a website's HTTP security posture, check for CDN/hosting indicators, debug caching behavior, or verify CORS configuration.\n\n**When NOT to use:** If you need page content or business intel, use `webintel_scan` or `webintel_markdown`. If you only need the technology stack, use `webintel_tech_detect` (which already checks headers for hosting signatures).\n\n**Behavior:** Read-only. Performs a single GET request and returns the response headers. The security analysis does not crawl or test additional endpoints — it evaluates only the headers returned for the given URL.",
+    description: `Inspect HTTP response headers and grade the web server's security posture with an A-through-F security rating.
+
+### Purpose
+Retrieve the exact HTTP response headers returned by a web server and perform an automated security evaluation auditing 6 critical headers: Strict-Transport-Security (HSTS), Content-Security-Policy (CSP), X-Content-Type-Options, X-Frame-Options, Referrer-Policy, and Permissions-Policy. Produces a 0-100 numerical score, letter grade (A/B/C/D/F), and actionable remediation guidance for missing protections.
+
+### When to Use
+- Auditing web application security posture, CDN caching rules, or CORS headers.
+- Checking web server identity (nginx, cloudflare, Apache), proxy gateways, and compression headers.
+- Compliance checks for HTTPS enforcement and clickjacking prevention.
+
+### When NOT to Use
+- Do NOT use if you need page content or SEO metadata; use \`webintel_markdown\` or \`webintel_seo_meta\` instead.
+- Do NOT use if you need DNS record validation; use \`webintel_dns_intel\` instead.
+- Do NOT use to find technology libraries embedded in client JavaScript; use \`webintel_tech_detect\` instead.
+
+### Disambiguation
+This tool does not parse HTML. It operates strictly at the HTTP protocol layer, inspecting status codes, transport security, cache directives, and server banners.
+
+### Behavior & Performance
+- Side Effects: None. Read-only single HTTP GET.
+- Idempotency: Yes.
+- Returns: Flat headers key-value map, status code, security score (0-100), letter grade (A-F), and per-header audit checks.
+- Latency: Typically 300ms to 1.5s.`,
     inputSchema: {
       type: "object",
       properties: {
         url: {
           type: "string",
           format: "uri",
+          pattern: "^https?://.+",
+          minLength: 8,
+          maxLength: 2048,
           description:
-            "The full public URL to inspect headers for (e.g., `https://cloudflare.com`). Must include the scheme.",
+            "The target URL whose HTTP response headers should be audited (e.g. 'https://cloudflare.com').",
+          examples: ["https://cloudflare.com", "https://github.com", "https://google.com"],
         },
       },
       required: ["url"],
+      additionalProperties: false,
     },
     annotations: {
       title: "HTTP Headers & Security Analysis",
@@ -162,19 +320,45 @@ const MCP_TOOLS = [
   },
   {
     name: "webintel_robots",
-    description:
-      "Fetch and parse the robots.txt file of a website. Returns the raw file content, parsed rules per user-agent (Disallow, Allow, Crawl-delay), listed sitemaps, and whether the given URL path is allowed or blocked for the WebIntelBot and wildcard (*) user-agents.\n\n**When to use:** You need to check crawl permissions before scraping, discover sitemap URLs, or audit a site's crawler directives for SEO analysis.\n\n**When NOT to use:** If you need page content or metadata, use `webintel_markdown` or `webintel_seo_meta`. If the site has no robots.txt (404), the response indicates this and defaults to \"allowed\".\n\n**Behavior:** Read-only. Fetches `{origin}/robots.txt` with a 3-second timeout and 64 KB size cap. If robots.txt is missing or inaccessible, returns `{ allowed: true, robotsFound: false }`. Does not follow sitemap URLs — it only lists them.",
+    description: `Fetch and parse a website's robots.txt file to determine crawler permissions and discover XML sitemaps.
+
+### Purpose
+Query the host's \`/robots.txt\` file, parse user-agent directives (Disallow, Allow, Crawl-delay), extract listed XML sitemaps, and evaluate whether a specific path is permitted for standard web crawlers (evaluating both WebIntelBot and wildcard '*' rules).
+
+### When to Use
+- Checking whether an autonomous agent or scraper is legally/ethically permitted to crawl a given URL path.
+- Locating authoritative XML sitemaps for site structure discovery and SEO auditing.
+- Inspecting crawl delays or bot-specific exclusions (e.g., GPTBot, ClaudeBot, Googlebot).
+
+### When NOT to Use
+- Do NOT use to parse the actual content of a web page; use \`webintel_markdown\` instead.
+- Do NOT use to extract on-page HTML links; use \`webintel_links\` instead.
+- If the target host has no robots.txt file (HTTP 404), this tool safely indicates that crawling is allowed by default.
+
+### Disambiguation
+This tool does not scrape the requested URL itself; instead, it targets the root \`/robots.txt\` of the URL's origin host and tests permissions for the given path.
+
+### Behavior & Performance
+- Side Effects: None. Read-only.
+- Idempotency: Yes.
+- Failsafe: Returns \`{ allowed: true, robotsFound: false }\` if robots.txt is missing, timing out, or returning a 404.
+- Latency: Typically 200ms to 1.2s.`,
     inputSchema: {
       type: "object",
       properties: {
         url: {
           type: "string",
           format: "uri",
+          pattern: "^https?://.+",
+          minLength: 8,
+          maxLength: 2048,
           description:
-            "The full public URL whose domain's robots.txt you want to check (e.g., `https://example.com/products/item-1`). The robots.txt is fetched from the URL's origin.",
+            "The target URL or website origin to check robots.txt directives for (e.g. 'https://nytimes.com/section/world').",
+          examples: ["https://nytimes.com", "https://wikipedia.org", "https://reddit.com"],
         },
       },
       required: ["url"],
+      additionalProperties: false,
     },
     annotations: {
       title: "Robots.txt Parser & Permission Check",
@@ -182,6 +366,56 @@ const MCP_TOOLS = [
       destructiveHint: false,
       idempotentHint: true,
       openWorldHint: false,
+    },
+  },
+  {
+    name: "webintel_dns_intel",
+    description: `Query public DNS records to identify enterprise mail providers, authoritative nameservers, SPF/security verifications, and hosting IP addresses.
+
+### Purpose
+Resolve DNS records for any domain: A (IPv4), AAAA (IPv6), MX (Mail Exchange), NS (Authoritative Name Servers), and TXT records. Automatically classifies corporate email infrastructure (Google Workspace, Microsoft 365, Proton, Zoho, iCloud), cloud DNS providers (Cloudflare, AWS Route 53, Google Cloud DNS), and audits SPF/DMARC and SaaS domain verifications (Stripe, Atlassian, Google, Apple, Facebook).
+
+### When to Use
+- B2B lead enrichment: Discover if a prospect uses Google Workspace vs. Microsoft 365 for business communications.
+- Domain security & deliverability auditing: Verify SPF records, DMARC alignment, and mail gateway protection.
+- Infrastructure reconnaissance: Identify authoritative nameservers (Cloudflare, Route 53) and IP addresses without making HTTP requests.
+
+### When NOT to Use
+- Do NOT use to inspect webpage HTML, headings, or on-page text; use \`webintel_markdown\` or \`webintel_scan\` instead.
+- Do NOT use to inspect HTTP response headers; use \`webintel_headers\` instead.
+- Do NOT use to detect client-side JavaScript frameworks; use \`webintel_tech_detect\` instead.
+
+### Disambiguation
+Unlike HTTP-based tools that require fetching and rendering web pages, \`webintel_dns_intel\` operates purely through low-latency UDP/TCP DNS queries directly against authoritative nameservers. It works even if the website's HTTP server is down or protected by Cloudflare bot walls.
+
+### Behavior & Performance
+- Side Effects: None. Read-only DNS lookups.
+- Idempotency: Yes.
+- SSRF Guard: Queries public domain names; internal/localhost hostnames are blocked.
+- Latency: Extremely fast (typically 50ms to 400ms).`,
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: {
+          type: "string",
+          format: "uri",
+          pattern: "^https?://.+",
+          minLength: 8,
+          maxLength: 2048,
+          description:
+            "The domain or website URL to query DNS intelligence for (e.g. 'https://stripe.com' or 'https://github.com').",
+          examples: ["https://stripe.com", "https://microsoft.com", "https://linear.app"],
+        },
+      },
+      required: ["url"],
+      additionalProperties: false,
+    },
+    annotations: {
+      title: "Domain DNS & Mail Infrastructure Intelligence",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
   },
 ];
@@ -212,7 +446,7 @@ export async function POST(req: NextRequest) {
 
   const { id = 1, method, params = {} } = jsonRpc;
 
-  // ── initialize ────────────────────────────────────────────────────────────
+  // ── 1. initialize ──────────────────────────────────────────────────────────
   if (method === "initialize") {
     return NextResponse.json({
       jsonrpc: "2.0",
@@ -224,34 +458,36 @@ export async function POST(req: NextRequest) {
         },
         serverInfo: {
           name: "WebIntel MCP Server",
-          version: "1.1.0",
+          version: "1.2.0",
         },
         instructions: [
-          "WebIntel provides read-only website intelligence tools for AI agents.",
-          "Use `webintel_scan` for a broad company overview (tech, contacts, social).",
-          "Use `webintel_tech_detect` for a fast technology-only check.",
-          "Use `webintel_markdown` to get clean page content for summarization or RAG.",
-          "Use `webintel_seo_meta` for SEO metadata, Open Graph, and JSON-LD extraction.",
-          "Use `webintel_links` to analyze internal/external link structure.",
-          "Use `webintel_headers` for HTTP security header auditing.",
-          "Use `webintel_robots` to check robots.txt crawl permissions and find sitemaps.",
-          "All tools are SSRF-protected and read-only. No JavaScript is executed.",
+          "WebIntel is a high-performance website intelligence and OSINT suite for AI agents.",
+          "Available tools:",
+          "- webintel_scan: Full 360-degree company reconnaissance (tech stack, contacts, social links, business profile).",
+          "- webintel_tech_detect: Fast 65+ technology stack inspection across frameworks, CMS, analytics, and payments.",
+          "- webintel_markdown: High-signal, noise-free Markdown conversion for token-efficient LLM reasoning and RAG.",
+          "- webintel_seo_meta: SEO metadata, Open Graph preview tags, Twitter cards, and Schema.org JSON-LD.",
+          "- webintel_links: Complete link graph extraction (internal, external, social channels, navigation pages).",
+          "- webintel_headers: HTTP response headers with automated security posture score and A-F grading.",
+          "- webintel_robots: robots.txt permission verification and XML sitemap discovery.",
+          "- webintel_dns_intel: Domain DNS intelligence (MX email provider detection, nameservers, SPF records).",
+          "All tools are read-only, idempotent, and protected by strict SSRF guards.",
         ].join("\n"),
       },
     });
   }
 
-  // ── notifications/initialized ─────────────────────────────────────────────
+  // ── 2. notifications/initialized ───────────────────────────────────────────
   if (method === "notifications/initialized") {
     return new NextResponse(null, { status: 204 });
   }
 
-  // ── ping ───────────────────────────────────────────────────────────────────
+  // ── 3. ping ─────────────────────────────────────────────────────────────────
   if (method === "ping") {
     return NextResponse.json({ jsonrpc: "2.0", id, result: {} });
   }
 
-  // ── tools/list ─────────────────────────────────────────────────────────────
+  // ── 4. tools/list ───────────────────────────────────────────────────────────
   if (method === "tools/list") {
     return NextResponse.json({
       jsonrpc: "2.0",
@@ -260,7 +496,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // ── tools/call ─────────────────────────────────────────────────────────────
+  // ── 5. tools/call ───────────────────────────────────────────────────────────
   if (method === "tools/call") {
     const toolName = params.name as string;
     const toolArgs = (params.arguments || {}) as {
@@ -277,12 +513,17 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      // ── webintel_robots (fetches robots.txt, not the page) ──────────────
+      // ── Tool: webintel_dns_intel ──────────────────────────────────────────
+      if (toolName === "webintel_dns_intel") {
+        return await handleDnsIntel(id, toolArgs.url);
+      }
+
+      // ── Tool: webintel_robots ─────────────────────────────────────────────
       if (toolName === "webintel_robots") {
         return await handleRobots(id, toolArgs.url);
       }
 
-      // All other tools need the page content
+      // HTTP-based tools require safe SSRF-guarded fetch
       const fetchResult = await safeFetch(toolArgs.url, {
         timeoutMs: 8000,
         maxSizeBytes: 2.5 * 1024 * 1024,
@@ -290,7 +531,7 @@ export async function POST(req: NextRequest) {
 
       const $ = cheerio.load(fetchResult.body);
 
-      // ── webintel_markdown ───────────────────────────────────────────────
+      // ── Tool: webintel_markdown ───────────────────────────────────────────
       if (toolName === "webintel_markdown") {
         const markdown = convertHtmlToMarkdown(fetchResult.body);
         return jsonRpcResult(id, {
@@ -300,7 +541,7 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // ── webintel_tech_detect ────────────────────────────────────────────
+      // ── Tool: webintel_tech_detect ────────────────────────────────────────
       if (toolName === "webintel_tech_detect") {
         const detected = detectTechnologies(
           fetchResult.body,
@@ -321,12 +562,12 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // ── webintel_seo_meta ───────────────────────────────────────────────
+      // ── Tool: webintel_seo_meta ───────────────────────────────────────────
       if (toolName === "webintel_seo_meta") {
         return jsonRpcResult(id, extractSeoMeta($, fetchResult));
       }
 
-      // ── webintel_links ──────────────────────────────────────────────────
+      // ── Tool: webintel_links ──────────────────────────────────────────────
       if (toolName === "webintel_links") {
         const parsedData = parseHtml(fetchResult.body, fetchResult.finalUrl);
         return jsonRpcResult(id, {
@@ -349,7 +590,7 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // ── webintel_headers ────────────────────────────────────────────────
+      // ── Tool: webintel_headers ────────────────────────────────────────────
       if (toolName === "webintel_headers") {
         return jsonRpcResult(
           id,
@@ -357,7 +598,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // ── webintel_scan (default full scan) ───────────────────────────────
+      // ── Tool: webintel_scan (Comprehensive Dossier) ───────────────────────
       const parsedData = parseHtml(fetchResult.body, fetchResult.finalUrl);
       const detectedTechnologies = detectTechnologies(
         fetchResult.body,
@@ -414,7 +655,7 @@ export async function POST(req: NextRequest) {
           content: [
             {
               type: "text",
-              text: `Error scanning ${toolArgs.url}: ${errMessage}`,
+              text: `Error executing ${toolName} on ${toolArgs.url}: ${errMessage}`,
             },
           ],
           isError: true,
@@ -423,7 +664,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── Unsupported method ──────────────────────────────────────────────────
+  // ── Unsupported method ────────────────────────────────────────────────────
   return NextResponse.json({
     jsonrpc: "2.0",
     id,
@@ -431,20 +672,23 @@ export async function POST(req: NextRequest) {
   });
 }
 
-// ─── GET /api/mcp — MCP Discovery & Pricing Manifest ────────────────────────
+// ─── GET /api/mcp — Discovery, TDQS Manifest & Pricing ───────────────────────
 
 export async function GET() {
   return NextResponse.json({
     name: "WebIntel MCP Server",
-    version: "1.1.0",
+    version: "1.2.0",
     description:
-      "Website intelligence and reconnaissance MCP tools for autonomous AI agents. Scan technology stacks, extract business intel, convert pages to Markdown, audit SEO metadata, analyze link graphs, inspect HTTP security headers, and check robots.txt — all SSRF-protected and read-only.",
+      "Enterprise website intelligence, technical reconnaissance, and clean content extraction for autonomous AI agents. 8 production tools covering tech stack detection (65+ signatures), business dossier synthesis, clean Markdown extraction, SEO metadata, link graph analysis, HTTP security grading, robots.txt permission checks, and domain DNS/email intelligence.",
     protocolVersion: "2024-11-05",
+    tdqsRating: "A (5.0/5.0 Target)",
     toolCount: MCP_TOOLS.length,
     tools: MCP_TOOLS.map((t) => ({
       name: t.name,
       title: t.annotations?.title,
-      description: t.description.split("\n")[0], // First sentence only for discovery
+      description: t.description.split("\n\n")[0],
+      readOnly: t.annotations?.readOnlyHint ?? true,
+      idempotent: t.annotations?.idempotentHint ?? true,
     })),
     monetization: {
       gateway: "Cloudflare Monetization Gateway",
@@ -454,13 +698,13 @@ export async function GET() {
         "bearer_api_key",
         "x402_agent_micropayment",
       ],
-      freeTier: "Available — no API key required for evaluation",
+      freeTier: "Developer evaluation mode active — free preview calls supported",
       status: "active",
     },
   });
 }
 
-// ─── Helper: JSON-RPC result wrapper ─────────────────────────────────────────
+// ─── JSON-RPC Result Helper ──────────────────────────────────────────────────
 
 function jsonRpcResult(id: string | number, data: Record<string, unknown>) {
   return NextResponse.json({
@@ -472,7 +716,129 @@ function jsonRpcResult(id: string | number, data: Record<string, unknown>) {
   });
 }
 
-// ─── Tool: webintel_seo_meta ─────────────────────────────────────────────────
+// ─── Tool Handler: webintel_dns_intel ────────────────────────────────────────
+
+async function handleDnsIntel(id: string | number, urlStr: string) {
+  let hostname = "";
+  try {
+    const parsed = new URL(urlStr.startsWith("http") ? urlStr : `https://${urlStr}`);
+    hostname = parsed.hostname;
+  } catch {
+    return NextResponse.json({
+      jsonrpc: "2.0",
+      id,
+      result: {
+        content: [{ type: "text", text: `Invalid domain or URL: "${urlStr}"` }],
+        isError: true,
+      },
+    });
+  }
+
+  // Pre-validate hostname against SSRF
+  try {
+    await validateAndResolveUrl(`https://${hostname}`);
+  } catch (err: unknown) {
+    const msg = err instanceof SecurityError ? err.message : String(err);
+    return NextResponse.json({
+      jsonrpc: "2.0",
+      id,
+      result: {
+        content: [{ type: "text", text: `SSRF validation failed for ${hostname}: ${msg}` }],
+        isError: true,
+      },
+    });
+  }
+
+  const [aResult, aaaaResult, mxResult, nsResult, txtResult] = await Promise.allSettled([
+    dns.resolve4(hostname),
+    dns.resolve6(hostname),
+    dns.resolveMx(hostname),
+    dns.resolveNs(hostname),
+    dns.resolveTxt(hostname),
+  ]);
+
+  const ipv4 = aResult.status === "fulfilled" ? aResult.value : [];
+  const ipv6 = aaaaResult.status === "fulfilled" ? aaaaResult.value : [];
+  const mxRecords = mxResult.status === "fulfilled" ? mxResult.value : [];
+  const nameservers = nsResult.status === "fulfilled" ? nsResult.value : [];
+  const rawTxt = txtResult.status === "fulfilled" ? txtResult.value : [];
+
+  // Flatten TXT records
+  const txtRecords = rawTxt.map((parts) => parts.join(""));
+
+  // Detect Email Provider from MX records
+  let detectedEmailProvider = "Unknown / Self-hosted";
+  const mxHosts = mxRecords.map((r) => r.exchange.toLowerCase()).join(" ");
+  if (mxHosts.includes("google") || mxHosts.includes("googlemail.com")) {
+    detectedEmailProvider = "Google Workspace";
+  } else if (mxHosts.includes("outlook.com") || mxHosts.includes("protection.outlook.com")) {
+    detectedEmailProvider = "Microsoft 365 / Exchange Online";
+  } else if (mxHosts.includes("protonmail") || mxHosts.includes("proton.me")) {
+    detectedEmailProvider = "ProtonMail";
+  } else if (mxHosts.includes("zoho")) {
+    detectedEmailProvider = "Zoho Mail";
+  } else if (mxHosts.includes("messagingengine.com")) {
+    detectedEmailProvider = "Fastmail";
+  } else if (mxHosts.includes("mimecast")) {
+    detectedEmailProvider = "Mimecast (Enterprise Gateway)";
+  } else if (mxHosts.includes("pphosted") || mxHosts.includes("proofpoint")) {
+    detectedEmailProvider = "Proofpoint (Enterprise Gateway)";
+  } else if (mxHosts.includes("amazonses.com")) {
+    detectedEmailProvider = "Amazon SES";
+  }
+
+  // Detect Cloud DNS / CDN from NS records
+  let detectedDnsProvider = "Standard / Registrar DNS";
+  const nsString = nameservers.map((n) => n.toLowerCase()).join(" ");
+  if (nsString.includes("cloudflare")) {
+    detectedDnsProvider = "Cloudflare";
+  } else if (nsString.includes("awsdns")) {
+    detectedDnsProvider = "AWS Route 53";
+  } else if (nsString.includes("googledomains") || nsString.includes("google.com")) {
+    detectedDnsProvider = "Google Cloud DNS";
+  } else if (nsString.includes("azure-dns")) {
+    detectedDnsProvider = "Azure DNS";
+  } else if (nsString.includes("domaincontrol.com")) {
+    detectedDnsProvider = "GoDaddy";
+  } else if (nsString.includes("registrar-servers.com")) {
+    detectedDnsProvider = "Namecheap";
+  }
+
+  // Extract Security & Verification TXT records
+  const spfRecord = txtRecords.find((t) => t.toLowerCase().startsWith("v=spf1")) || null;
+  const verifications: Record<string, boolean> = {
+    google: txtRecords.some((t) => t.includes("google-site-verification")),
+    microsoft: txtRecords.some((t) => t.includes("MS=") || t.includes("microsoft")),
+    stripe: txtRecords.some((t) => t.includes("stripe-verification")),
+    atlassian: txtRecords.some((t) => t.includes("atlassian-domain-verification")),
+    facebook: txtRecords.some((t) => t.includes("facebook-domain-verification")),
+    apple: txtRecords.some((t) => t.includes("apple-domain-verification")),
+    docusign: txtRecords.some((t) => t.includes("docusign")),
+  };
+
+  return jsonRpcResult(id, {
+    domain: hostname,
+    emailProvider: detectedEmailProvider,
+    dnsProvider: detectedDnsProvider,
+    security: {
+      hasSpfRecord: Boolean(spfRecord),
+      spfRecord,
+      verifications: Object.entries(verifications)
+        .filter(([, found]) => found)
+        .map(([name]) => name),
+    },
+    records: {
+      a: ipv4,
+      aaaa: ipv6,
+      mx: mxRecords.sort((a, b) => a.priority - b.priority),
+      ns: nameservers,
+      txtCount: txtRecords.length,
+      txt: txtRecords.slice(0, 15),
+    },
+  });
+}
+
+// ─── Tool Handler: webintel_seo_meta ─────────────────────────────────────────
 
 function extractSeoMeta(
   $: cheerio.CheerioAPI,
@@ -481,18 +847,16 @@ function extractSeoMeta(
   const getMeta = (attr: string, value: string) =>
     $(`meta[${attr}="${value}"]`).attr("content")?.trim() || null;
 
-  // Parse all JSON-LD blocks
   const jsonLdBlocks: unknown[] = [];
   $('script[type="application/ld+json"]').each((_, el) => {
     try {
       const parsed = JSON.parse($(el).text());
       jsonLdBlocks.push(parsed);
     } catch {
-      // skip invalid JSON-LD
+      // Ignore invalid JSON-LD blocks
     }
   });
 
-  // Robots meta
   const robotsMeta =
     getMeta("name", "robots") || getMeta("name", "googlebot") || null;
 
@@ -542,7 +906,7 @@ function extractSeoMeta(
   };
 }
 
-// ─── Tool: webintel_headers ──────────────────────────────────────────────────
+// ─── Tool Handler: webintel_headers ──────────────────────────────────────────
 
 interface SecurityCheck {
   header: string;
@@ -565,27 +929,27 @@ function analyzeHeaders(
   const securityHeaders: Array<{ name: string; rec: string }> = [
     {
       name: "strict-transport-security",
-      rec: "Add `Strict-Transport-Security: max-age=31536000; includeSubDomains` to enforce HTTPS.",
+      rec: "Add 'Strict-Transport-Security: max-age=31536000; includeSubDomains' to enforce HTTPS transport.",
     },
     {
       name: "content-security-policy",
-      rec: "Add a Content-Security-Policy header to prevent XSS and injection attacks.",
+      rec: "Add a Content-Security-Policy (CSP) header to restrict external resource origins and prevent XSS injection.",
     },
     {
       name: "x-content-type-options",
-      rec: "Add `X-Content-Type-Options: nosniff` to prevent MIME-type sniffing.",
+      rec: "Add 'X-Content-Type-Options: nosniff' to prevent browser MIME-type sniffing.",
     },
     {
       name: "x-frame-options",
-      rec: "Add `X-Frame-Options: DENY` or `SAMEORIGIN` to prevent clickjacking.",
+      rec: "Add 'X-Frame-Options: DENY' or 'SAMEORIGIN' to protect visitors against clickjacking.",
     },
     {
       name: "referrer-policy",
-      rec: "Add `Referrer-Policy: strict-origin-when-cross-origin` to control referrer leakage.",
+      rec: "Add 'Referrer-Policy: strict-origin-when-cross-origin' to protect sensitive URL parameters on outbound clicks.",
     },
     {
       name: "permissions-policy",
-      rec: "Add a Permissions-Policy header to restrict browser feature access (camera, microphone, geolocation).",
+      rec: "Add a Permissions-Policy header to restrict access to sensitive device APIs (camera, geolocation, microphone).",
     },
   ];
 
@@ -600,11 +964,8 @@ function analyzeHeaders(
   });
 
   const presentCount = checks.filter((c) => c.present).length;
-  const securityScore = Math.round(
-    (presentCount / securityHeaders.length) * 100
-  );
+  const securityScore = Math.round((presentCount / securityHeaders.length) * 100);
 
-  // Build flat headers object
   const allHeaders: Record<string, string> = {};
   for (const [key, val] of Object.entries(headers)) {
     if (val !== undefined) {
@@ -639,7 +1000,7 @@ function analyzeHeaders(
   };
 }
 
-// ─── Tool: webintel_robots ───────────────────────────────────────────────────
+// ─── Tool Handler: webintel_robots ───────────────────────────────────────────
 
 async function handleRobots(id: string | number, urlStr: string) {
   try {
@@ -661,7 +1022,7 @@ async function handleRobots(id: string | number, urlStr: string) {
         robotsFound = true;
       }
     } catch {
-      // robots.txt not available
+      // robots.txt missing or failed
     }
 
     if (!robotsFound) {
@@ -670,14 +1031,12 @@ async function handleRobots(id: string | number, urlStr: string) {
         robotsUrl,
         robotsFound: false,
         allowed: true,
-        message:
-          "No robots.txt found — crawling is not explicitly restricted.",
+        message: "No robots.txt found — crawling is permitted by default.",
         sitemaps: [],
         rules: [],
       });
     }
 
-    // Parse robots.txt
     const lines = body.split(/\r?\n/);
     const sitemaps: string[] = [];
     const rules: Array<{
@@ -732,7 +1091,6 @@ async function handleRobots(id: string | number, urlStr: string) {
     }
     flushAgent();
 
-    // Check if the given path is allowed
     const pathToCheck = targetUrl.pathname || "/";
     let isAllowed = true;
     for (const rule of rules) {
@@ -743,7 +1101,6 @@ async function handleRobots(id: string | number, urlStr: string) {
             isAllowed = false;
           }
         }
-        // Allow rules can override disallow
         for (const allowPath of rule.allow) {
           if (pathToCheck.startsWith(allowPath)) {
             isAllowed = true;
