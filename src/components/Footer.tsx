@@ -90,6 +90,14 @@ export function Footer() {
             &copy; 2026 WebIntel API. All rights reserved.
           </div>
           <div className="flex items-center gap-4">
+            <a href="/security" className="hover:text-[#0e1014] transition-colors">
+              TRUST_CENTER
+            </a>
+            <span>|</span>
+            <a href="/privacy" className="hover:text-[#0e1014] transition-colors">
+              PRIVACY_POLICY
+            </a>
+            <span>|</span>
             <a href="#playground" className="hover:text-[#0e1014] flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#047857] animate-pulse" />
               <span>STATUS: OPERATIONAL</span>
