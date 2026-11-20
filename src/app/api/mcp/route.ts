@@ -82,7 +82,42 @@ export async function POST(req: NextRequest) {
   const { id = 1, method, params = {} } = jsonRpc;
 
   // 2. Handle MCP protocol methods
-  // a) tools/list - Returns all available WebIntel tools to the agent
+
+  // a) initialize - Required MCP handshake
+  if (method === "initialize") {
+    return NextResponse.json({
+      jsonrpc: "2.0",
+      id,
+      result: {
+        protocolVersion: "2024-11-05",
+        capabilities: {
+          tools: {},
+        },
+        serverInfo: {
+          name: "WebIntel MCP Server",
+          version: "1.0.0",
+        },
+        instructions:
+          "WebIntel provides website intelligence tools: scan sites for tech stacks, extract business intel, and convert pages to clean Markdown.",
+      },
+    });
+  }
+
+  // b) notifications/initialized - Client acknowledgement (no response for notifications)
+  if (method === "notifications/initialized") {
+    return new NextResponse(null, { status: 204 });
+  }
+
+  // c) ping - Health check
+  if (method === "ping") {
+    return NextResponse.json({
+      jsonrpc: "2.0",
+      id,
+      result: {},
+    });
+  }
+
+  // d) tools/list - Returns all available WebIntel tools to the agent
   if (method === "tools/list") {
     return NextResponse.json({
       jsonrpc: "2.0",
