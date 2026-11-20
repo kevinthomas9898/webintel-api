@@ -26,9 +26,9 @@ export function Footer() {
               The high-speed, deterministic website intelligence layer engineered for autonomous AI agents, LLM
               toolchains, and automated data pipelines.
             </p>
-            <div className="flex items-center gap-2 text-[11px] text-[#047857] font-semibold">
-              <Shield className="w-3.5 h-3.5" />
-              <span>SSRF_ARMOR: RFC-1918 &amp; SOCKET_PINNING_ENFORCED</span>
+            <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-[#047857] font-semibold">
+              <Shield className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="break-all sm:break-normal">SSRF_ARMOR: RFC-1918 &amp; SOCKET_PINNING_ENFORCED</span>
             </div>
           </div>
 
@@ -37,34 +37,34 @@ export function Footer() {
             <h4 className="font-bold text-[#0e1014] uppercase text-[11px] tracking-wider">
               Console Navigation
             </h4>
-            <ul className="space-y-1.5 text-xs">
+            <ul className="space-y-2 text-xs">
               <li>
-                <a href="#playground" className="hover:text-[#0e1014] transition-colors">
+                <a href="#playground" className="hover:text-[#0e1014] transition-colors inline-block py-0.5">
                   &gt; INSPECTION_DECK
                 </a>
               </li>
               <li>
-                <a href="#security" className="hover:text-[#0e1014] transition-colors">
+                <a href="#security" className="hover:text-[#0e1014] transition-colors inline-block py-0.5">
                   &gt; SSRF_DEFENSE_TRACE
                 </a>
               </li>
               <li>
-                <a href="#matrix" className="hover:text-[#0e1014] transition-colors">
+                <a href="#matrix" className="hover:text-[#0e1014] transition-colors inline-block py-0.5">
                   &gt; TECH_SIGNATURE_MATRIX
                 </a>
               </li>
               <li>
-                <a href="#monetization" className="hover:text-[#0e1014] transition-colors text-[#c2410c] font-semibold">
+                <a href="#monetization" className="hover:text-[#0e1014] transition-colors text-[#c2410c] font-semibold inline-block py-0.5">
                   &gt; PAY_PER_CRAWL_GATEWAY
                 </a>
               </li>
               <li>
-                <a href="#docs" className="hover:text-[#0e1014] transition-colors">
+                <a href="#docs" className="hover:text-[#0e1014] transition-colors inline-block py-0.5">
                   &gt; API_SPECIFICATION
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="hover:text-[#0e1014] transition-colors">
+                <a href="#pricing" className="hover:text-[#0e1014] transition-colors inline-block py-0.5">
                   &gt; FLEET_PRICING
                 </a>
               </li>
@@ -85,25 +85,25 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-6 border-t border-[#e2ded5] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#828794]">
+        <div className="pt-6 border-t border-[#e2ded5] flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-[#828794] text-center md:text-left">
           <div>
             &copy; 2026 WebIntel API. All rights reserved.
           </div>
-          <div className="flex items-center gap-4">
-            <a href="/security" className="hover:text-[#0e1014] transition-colors">
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-2">
+            <a href="/security" className="hover:text-[#0e1014] transition-colors py-0.5">
               TRUST_CENTER
             </a>
-            <span>|</span>
-            <a href="/privacy" className="hover:text-[#0e1014] transition-colors">
+            <span className="hidden sm:inline text-[#d5d1c6]">|</span>
+            <a href="/privacy" className="hover:text-[#0e1014] transition-colors py-0.5">
               PRIVACY_POLICY
             </a>
-            <span>|</span>
-            <a href="#playground" className="hover:text-[#0e1014] flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#047857] animate-pulse" />
+            <span className="hidden sm:inline text-[#d5d1c6]">|</span>
+            <a href="#playground" className="hover:text-[#0e1014] flex items-center gap-1.5 py-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#047857] animate-pulse flex-shrink-0" />
               <span>STATUS: OPERATIONAL</span>
             </a>
-            <span>|</span>
-            <span>BUILT_FOR_AUTONOMOUS_AGENTS</span>
+            <span className="hidden sm:inline text-[#d5d1c6]">|</span>
+            <span className="py-0.5">BUILT_FOR_AUTONOMOUS_AGENTS</span>
           </div>
         </div>
       </div>

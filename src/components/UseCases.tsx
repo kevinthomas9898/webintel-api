@@ -88,9 +88,9 @@ export function UseCases() {
                 </p>
               </div>
 
-              <div className="p-3 rounded bg-[#0e1014] font-mono text-xs text-[#ece7dd] flex items-center justify-between shadow-2xs">
-                <code>{uc.example}</code>
-                <ArrowRight className="w-3.5 h-3.5 text-[#828794]" />
+              <div className="p-3 rounded bg-[#0e1014] font-mono text-xs text-[#ece7dd] flex items-center justify-between gap-2 shadow-2xs overflow-hidden">
+                <code className="truncate">{uc.example}</code>
+                <ArrowRight className="w-3.5 h-3.5 text-[#828794] flex-shrink-0" />
               </div>
             </div>
           ))}

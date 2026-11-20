@@ -168,7 +168,7 @@ print("Emails:", data.get("emails"))`,
           <div className="lg:col-span-7 space-y-4">
             <div className="rounded-xl bg-[#0e1014] border border-[#252830] overflow-hidden shadow-xs">
               {/* Language Switcher */}
-              <div className="px-4 py-2.5 bg-[#171a21] border-b border-[#252830] flex items-center justify-between font-mono text-xs">
+              <div className="px-4 py-2.5 bg-[#171a21] border-b border-[#252830] flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setSelectedLang("curl")}
@@ -230,10 +230,10 @@ print("Emails:", data.get("emails"))`,
 
             {/* Example JSON output preview */}
             <div className="p-4 rounded-xl bg-[#ffffff] border border-[#e2ded5] space-y-2 font-mono text-xs">
-              <div className="flex items-center justify-between text-[#828794] pb-2 border-b border-[#f1ede4]">
+              <div className="flex flex-wrap items-center justify-between gap-1.5 text-[#828794] pb-2 border-b border-[#f1ede4]">
                 <span className="font-bold text-[#0e1014] flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-[#c2410c]" />
-                  OUTPUT_SCHEMA: GUARANTEED_SHAPE
+                  <FileText className="w-3.5 h-3.5 text-[#c2410c] flex-shrink-0" />
+                  <span>OUTPUT_SCHEMA: GUARANTEED_SHAPE</span>
                 </span>
                 <span className="text-[10px]">200 OK application/json</span>
               </div>

@@ -200,7 +200,7 @@ export function SsrfSandbox() {
               </div>
 
               {/* Bottom Footer */}
-              <div className="pt-4 mt-5 border-t border-[#e2ded5] flex items-center justify-between text-xs font-mono">
+              <div className="pt-4 mt-5 border-t border-[#e2ded5] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs font-mono">
                 <span className="text-[#828794]">RFC_3927 &amp; RFC_1918 GUARD</span>
                 <a
                   href="#playground"

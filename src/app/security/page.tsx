@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function SecurityPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-16 font-sans">
+    <div className="max-w-4xl mx-auto px-4 py-10 sm:py-16 font-sans">
       <Link
         href="/"
         className="inline-flex items-center gap-2 text-xs font-mono text-[#c2410c] hover:underline mb-8"
@@ -105,7 +105,7 @@ export default function SecurityPage() {
               href="https://github.com/kevinthomas9898/webintel-api"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#c2410c] hover:underline"
+              className="text-[#c2410c] hover:underline break-all sm:break-normal"
             >
               github.com/kevinthomas9898/webintel-api
             </a>.

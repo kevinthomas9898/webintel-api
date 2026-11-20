@@ -39,7 +39,7 @@ const TIERS = [
       "Priority SLA & dedicated Slack channel",
     ],
     ctaText: "JOIN_EARLY_ACCESS",
-    ctaLink: "#playground",
+    ctaLink: "https://checkout.dodopayments.com/buy/pdt_0NsNElzzVuHB8gU1KPDYI?quantity=1",
     highlight: true,
   },
   {
@@ -92,16 +92,16 @@ export function Pricing() {
           </div>
 
           {/* Pricing Model Switcher */}
-          <div className="inline-flex items-center p-1 rounded-md bg-[#ece7dd] border border-[#dcd7cb] font-mono text-xs">
+          <div className="w-full sm:w-auto inline-flex items-center justify-center p-1 rounded-md bg-[#ece7dd] border border-[#dcd7cb] font-mono text-xs">
             <button
               onClick={() => setPricingMode("micropayments")}
-              className={`px-3 py-1.5 rounded transition-all flex items-center gap-1.5 ${
+              className={`flex-1 sm:flex-initial px-2.5 sm:px-3 py-1.5 rounded transition-all flex items-center justify-center gap-1.5 text-[11px] sm:text-xs ${
                 pricingMode === "micropayments"
                   ? "bg-[#0e1014] text-[#f7f6f2] font-semibold"
                   : "text-[#4b4f59] hover:text-[#0e1014]"
               }`}
             >
-              <DollarSign className="w-3.5 h-3.5 text-[#c2410c]" />
+              <DollarSign className="w-3.5 h-3.5 text-[#c2410c] flex-shrink-0" />
               <span>PAY_PER_CRAWL</span>
               <span className="px-1.5 py-0.2 rounded bg-[#fff7ed] text-[#c2410c] text-[10px] font-bold">
                 $0.005
@@ -109,7 +109,7 @@ export function Pricing() {
             </button>
             <button
               onClick={() => setPricingMode("subscriptions")}
-              className={`px-3 py-1.5 rounded transition-all ${
+              className={`flex-1 sm:flex-initial px-2.5 sm:px-3 py-1.5 rounded transition-all text-center text-[11px] sm:text-xs ${
                 pricingMode === "subscriptions"
                   ? "bg-[#0e1014] text-[#f7f6f2] font-semibold"
                   : "text-[#4b4f59] hover:text-[#0e1014]"
@@ -123,11 +123,11 @@ export function Pricing() {
         {/* MODE 1: Interactive Pay-Per-Crawl & Micropayments Engine */}
         {pricingMode === "micropayments" && (
           <div className="max-w-5xl mx-auto font-mono">
-            <div className="p-6 sm:p-8 rounded-xl bg-[#ffffff] border-2 border-[#0e1014] shadow-md space-y-8">
+            <div className="p-4 sm:p-8 rounded-xl bg-[#ffffff] border-2 border-[#0e1014] shadow-md space-y-6 sm:space-y-8">
               
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#f1ede4]">
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#fff7ed] text-[#c2410c] border border-[#fed7aa] uppercase">
                       Zero Fixed Cost &bull; Pure Micropayments
                     </span>
@@ -143,17 +143,17 @@ export function Pricing() {
                   </p>
                 </div>
 
-                <div className="text-right sm:text-right flex-shrink-0">
-                  <div className="text-3xl font-extrabold text-[#0e1014]">$0.005</div>
+                <div className="text-left sm:text-right flex-shrink-0">
+                  <div className="text-2xl sm:text-3xl font-extrabold text-[#0e1014]">$0.005</div>
                   <div className="text-xs text-[#828794]">USD / verified scan</div>
                 </div>
               </div>
 
               {/* Interactive Volume Slider */}
-              <div className="space-y-4 bg-[#faf9f6] p-5 sm:p-6 rounded-lg border border-[#e2ded5]">
+              <div className="space-y-4 bg-[#faf9f6] p-4 sm:p-6 rounded-lg border border-[#e2ded5]">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Calculator className="w-4 h-4 text-[#c2410c]" />
+                    <Calculator className="w-4 h-4 text-[#c2410c] flex-shrink-0" />
                     <span className="text-xs font-bold text-[#0e1014]">
                       ESTIMATE AGENT FLEET VOLUME &amp; COST
                     </span>
@@ -174,10 +174,10 @@ export function Pricing() {
                 />
 
                 <div className="flex justify-between text-[11px] text-[#828794]">
-                  <span>1,000 scans ($5)</span>
-                  <span>50,000 scans ($250)</span>
-                  <span>100,000 scans ($500)</span>
-                  <span>200,000 scans ($1,000)</span>
+                  <span>1,000 ($5)</span>
+                  <span className="hidden sm:inline">50,000 scans ($250)</span>
+                  <span className="hidden sm:inline">100,000 scans ($500)</span>
+                  <span>200,000 ($1,000)</span>
                 </div>
 
                 {/* Calculation Output Cards */}
@@ -242,19 +242,19 @@ export function Pricing() {
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-4 flex flex-col sm:flex-row items-center gap-3">
+              <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <a
                   href="#monetization"
-                  className="w-full sm:w-auto px-6 py-3 rounded-md bg-[#0e1014] hover:bg-[#252830] text-[#f7f6f2] text-xs font-mono font-semibold flex items-center justify-center gap-2 shadow-xs transition-colors"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-3 rounded-md bg-[#0e1014] hover:bg-[#252830] text-[#f7f6f2] text-xs font-mono font-semibold flex items-center justify-center gap-2 shadow-xs transition-colors text-center"
                 >
-                  <Cpu className="w-4 h-4 text-[#c2410c]" />
-                  <span>VIEW_PAY_PER_CRAWL_GATEWAY_DOCS</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <Cpu className="w-4 h-4 text-[#c2410c] flex-shrink-0" />
+                  <span className="break-all sm:break-normal">VIEW_PAY_PER_CRAWL_GATEWAY_DOCS</span>
+                  <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
                 </a>
 
                 <a
                   href="#playground"
-                  className="w-full sm:w-auto px-6 py-3 rounded-md bg-[#f1ede4] hover:bg-[#e4dfd3] text-[#0e1014] border border-[#dcd7cb] text-xs font-mono font-semibold flex items-center justify-center gap-2 transition-colors"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-3 rounded-md bg-[#f1ede4] hover:bg-[#e4dfd3] text-[#0e1014] border border-[#dcd7cb] text-xs font-mono font-semibold flex items-center justify-center gap-2 transition-colors text-center"
                 >
                   <span>TEST_LIVE_SCAN_FREE()</span>
                 </a>
@@ -268,7 +268,7 @@ export function Pricing() {
         {pricingMode === "subscriptions" && (
           <div>
             {/* Subscriptions Cycle Toggle */}
-            <div className="flex justify-end mb-6">
+            <div className="flex justify-center sm:justify-end mb-6">
               <div className="inline-flex items-center p-1 rounded-md bg-[#ece7dd] border border-[#dcd7cb] font-mono text-xs">
                 <button
                   onClick={() => setBillingCycle("monthly")}
@@ -301,14 +301,14 @@ export function Pricing() {
               {TIERS.map((tier, idx) => (
                 <div
                   key={idx}
-                  className={`p-6 sm:p-7 rounded-xl flex flex-col justify-between transition-all font-mono ${
+                  className={`p-5 sm:p-7 rounded-xl flex flex-col justify-between transition-all font-mono ${
                     tier.highlight
                       ? "bg-[#ffffff] border-2 border-[#0e1014] shadow-md relative"
                       : "bg-[#ffffff] border border-[#e2ded5] shadow-xs hover:border-[#d5d1c6]"
                   }`}
                 >
                   {tier.highlight && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded bg-[#0e1014] text-[#f7f6f2] text-[10px] font-bold uppercase tracking-wider">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded bg-[#0e1014] text-[#f7f6f2] text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
                       RECOMMENDED_FOR_FLEETS
                     </div>
                   )}
@@ -359,6 +359,8 @@ export function Pricing() {
                   <div className="pt-8">
                     <a
                       href={tier.ctaLink}
+                      target={tier.ctaLink.startsWith("http") ? "_blank" : undefined}
+                      rel={tier.ctaLink.startsWith("http") ? "noopener noreferrer" : undefined}
                       className={`w-full py-2.5 rounded-md text-center text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-all ${
                         tier.highlight
                           ? "bg-[#0e1014] hover:bg-[#252830] text-[#f7f6f2] shadow-xs"
@@ -376,14 +378,14 @@ export function Pricing() {
         )}
 
         {/* Security and Edge Guarantee Strip */}
-        <div className="mt-12 max-w-xl mx-auto p-3.5 rounded-lg bg-[#ffffff] border border-[#e2ded5] shadow-xs flex flex-wrap items-center justify-center gap-5 text-xs font-mono text-[#4b4f59]">
+        <div className="mt-12 max-w-xl mx-auto p-3.5 rounded-lg bg-[#ffffff] border border-[#e2ded5] shadow-xs flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs font-mono text-[#4b4f59] text-center">
           <div className="flex items-center gap-1.5 text-[#047857] font-semibold">
-            <ShieldCheck className="w-4 h-4" />
+            <ShieldCheck className="w-4 h-4 flex-shrink-0" />
             <span>PINNED_SOCKET_GUARANTEE</span>
           </div>
-          <span className="text-[#d5d1c6]">|</span>
+          <span className="hidden sm:inline text-[#d5d1c6]">|</span>
           <div className="flex items-center gap-1.5 text-[#0e1014] font-semibold">
-            <Zap className="w-4 h-4 text-[#c2410c]" />
+            <Zap className="w-4 h-4 text-[#c2410c] flex-shrink-0" />
             <span>SUB_500MS_THROUGHPUT</span>
           </div>
         </div>

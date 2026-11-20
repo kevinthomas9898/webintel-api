@@ -92,11 +92,11 @@ export function CloudflareMonetization() {
             </div>
 
             {/* MCP Configuration Box */}
-            <div className="p-5 rounded-xl bg-[#faf9f6] border border-[#e2ded5] space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-[#0e1014] flex items-center gap-1.5">
-                  <Bot className="w-4 h-4 text-[#c2410c]" />
-                  Claude Desktop &amp; Cursor MCP Config
+            <div className="p-4 sm:p-5 rounded-xl bg-[#faf9f6] border border-[#e2ded5] space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <span className="font-bold text-[#0e1014] flex items-center gap-1.5 text-[11px] sm:text-xs">
+                  <Bot className="w-4 h-4 text-[#c2410c] flex-shrink-0" />
+                  <span>Claude Desktop &amp; Cursor MCP Config</span>
                 </span>
                 <button
                   onClick={() => handleCopy(MCP_CONFIG)}

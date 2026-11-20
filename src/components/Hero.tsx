@@ -58,8 +58,8 @@ export function Hero() {
           {/* Left Column: Bold Asymmetric Editorial Headline */}
           <div className="lg:col-span-7 space-y-6">
             {/* Architectural Spec Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#ece7dd] border border-[#dcd7cb] text-[11px] font-mono text-[#4b4f59]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#c2410c]" />
+            <div className="inline-flex flex-wrap items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded bg-[#ece7dd] border border-[#dcd7cb] text-[10px] sm:text-[11px] font-mono text-[#4b4f59] max-w-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#c2410c] flex-shrink-0" />
               <span className="uppercase font-semibold tracking-wider text-[#0e1014]">
                 PROTOCOL: RECONNAISSANCE_LAYER
               </span>
@@ -68,7 +68,7 @@ export function Hero() {
             </div>
 
             {/* Asymmetric Typography */}
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold tracking-tight text-[#0e1014] leading-[1.08]">
+            <h1 className="text-3xl sm:text-5xl lg:text-[3.5rem] font-bold tracking-tight text-[#0e1014] leading-[1.12] sm:leading-[1.08]">
               Autonomous Website Intelligence.{" "}
               <span className="block font-serif italic font-normal text-[#c2410c]">
                 Engineered for AI Agents.
@@ -102,22 +102,22 @@ export function Hero() {
             </div>
 
             {/* Live Instrument Readout Strip */}
-            <div className="pt-6 border-t border-[#e2ded5] grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono text-xs">
+            <div className="pt-6 border-t border-[#e2ded5] grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 font-mono text-[11px] sm:text-xs">
               <div>
                 <span className="text-[10px] uppercase text-[#828794] block">DNS_RESOLVER</span>
-                <span className="font-semibold text-[#0e1014]">PINNED_SOCKET</span>
+                <span className="font-semibold text-[#0e1014] truncate block">PINNED_SOCKET</span>
               </div>
               <div>
                 <span className="text-[10px] uppercase text-[#828794] block">MAX_DEPTH</span>
-                <span className="font-semibold text-[#0e1014]">1_PAGE_SAME_ORIGIN</span>
+                <span className="font-semibold text-[#0e1014] truncate block">1_PAGE_SAME_ORIGIN</span>
               </div>
               <div>
                 <span className="text-[10px] uppercase text-[#828794] block">SIZE_CEILING</span>
-                <span className="font-semibold text-[#0e1014]">2.5_MB_STREAM_CAP</span>
+                <span className="font-semibold text-[#0e1014] truncate block">2.5_MB_STREAM_CAP</span>
               </div>
               <div>
                 <span className="text-[10px] uppercase text-[#828794] block">EXTRACTION_CONFIDENCE</span>
-                <span className="font-semibold text-[#047857]">DETERMINISTIC</span>
+                <span className="font-semibold text-[#047857] truncate block">DETERMINISTIC</span>
               </div>
             </div>
           </div>

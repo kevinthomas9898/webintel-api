@@ -189,7 +189,7 @@ export function TechRadar() {
 
           {/* Right Detailed Heuristic Inspector */}
           <div className="lg:col-span-5 p-5 sm:p-6 rounded-xl bg-[#ffffff] border border-[#e2ded5] shadow-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-[#e2ded5] mb-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#e2ded5] mb-4">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#828794] block">
                   SIGNATURE_SPECIFICATION
@@ -226,7 +226,7 @@ export function TechRadar() {
               </div>
             </div>
 
-            <div className="pt-5 mt-5 border-t border-[#e2ded5] flex items-center justify-between text-xs">
+            <div className="pt-5 mt-5 border-t border-[#e2ded5] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
               <span className="text-[#828794]">DETERMINISTIC_EXTRACTION</span>
               <a
                 href="#playground"

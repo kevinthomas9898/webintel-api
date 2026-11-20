@@ -258,10 +258,10 @@ export function Playground() {
             <div>
               {/* Output Tabs Bar */}
               <div className="px-4 py-2.5 bg-[#f1ede4] border-b border-[#e2ded5] flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
-                <div className="flex items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <button
                     onClick={() => setActiveTab("dossier")}
-                    className={`px-3 py-1 rounded text-xs transition-all ${
+                    className={`px-2.5 sm:px-3 py-1 rounded text-xs transition-all ${
                       activeTab === "dossier"
                         ? "bg-[#0e1014] text-[#f7f6f2] font-semibold"
                         : "bg-[#ffffff] text-[#4b4f59] border border-[#dcd7cb] hover:bg-[#e4dfd3]"
@@ -271,7 +271,7 @@ export function Playground() {
                   </button>
                   <button
                     onClick={() => setActiveTab("json")}
-                    className={`px-3 py-1 rounded text-xs transition-all flex items-center gap-1 ${
+                    className={`px-2.5 sm:px-3 py-1 rounded text-xs transition-all flex items-center gap-1 ${
                       activeTab === "json"
                         ? "bg-[#0e1014] text-[#f7f6f2] font-semibold"
                         : "bg-[#ffffff] text-[#4b4f59] border border-[#dcd7cb] hover:bg-[#e4dfd3]"
@@ -282,7 +282,7 @@ export function Playground() {
                   </button>
                   <button
                     onClick={() => setActiveTab("content")}
-                    className={`px-3 py-1 rounded text-xs transition-all ${
+                    className={`px-2.5 sm:px-3 py-1 rounded text-xs transition-all ${
                       activeTab === "content"
                         ? "bg-[#0e1014] text-[#f7f6f2] font-semibold"
                         : "bg-[#ffffff] text-[#4b4f59] border border-[#dcd7cb] hover:bg-[#e4dfd3]"

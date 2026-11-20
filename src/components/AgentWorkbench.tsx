@@ -132,10 +132,10 @@ export const webIntelTool = tool({
         {/* Framework Selector Tabs */}
         <div className="rounded-xl bg-[#faf9f6] border border-[#e2ded5] overflow-hidden">
           <div className="px-4 py-3 bg-[#f1ede4] border-b border-[#e2ded5] flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
                 onClick={() => setFramework("langchain")}
-                className={`px-3 py-1.5 rounded transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded transition-all text-xs ${
                   framework === "langchain"
                     ? "bg-[#0e1014] text-[#f7f6f2] font-semibold"
                     : "bg-[#ffffff] text-[#4b4f59] border border-[#dcd7cb] hover:bg-[#e4dfd3]"
@@ -145,7 +145,7 @@ export const webIntelTool = tool({
               </button>
               <button
                 onClick={() => setFramework("crewai")}
-                className={`px-3 py-1.5 rounded transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded transition-all text-xs ${
                   framework === "crewai"
                     ? "bg-[#0e1014] text-[#f7f6f2] font-semibold"
                     : "bg-[#ffffff] text-[#4b4f59] border border-[#dcd7cb] hover:bg-[#e4dfd3]"
@@ -155,7 +155,7 @@ export const webIntelTool = tool({
               </button>
               <button
                 onClick={() => setFramework("openai")}
-                className={`px-3 py-1.5 rounded transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded transition-all text-xs ${
                   framework === "openai"
                     ? "bg-[#0e1014] text-[#f7f6f2] font-semibold"
                     : "bg-[#ffffff] text-[#4b4f59] border border-[#dcd7cb] hover:bg-[#e4dfd3]"
@@ -165,7 +165,7 @@ export const webIntelTool = tool({
               </button>
               <button
                 onClick={() => setFramework("typescript")}
-                className={`px-3 py-1.5 rounded transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded transition-all text-xs ${
                   framework === "typescript"
                     ? "bg-[#0e1014] text-[#f7f6f2] font-semibold"
                     : "bg-[#ffffff] text-[#4b4f59] border border-[#dcd7cb] hover:bg-[#e4dfd3]"
@@ -177,7 +177,7 @@ export const webIntelTool = tool({
 
             <button
               onClick={handleCopy}
-              className="px-3 py-1.5 rounded bg-[#ffffff] hover:bg-[#ece7dd] border border-[#dcd7cb] text-[#0e1014] text-xs flex items-center gap-1.5 transition-colors"
+              className="w-full sm:w-auto justify-center px-3 py-1.5 rounded bg-[#ffffff] hover:bg-[#ece7dd] border border-[#dcd7cb] text-[#0e1014] text-xs flex items-center gap-1.5 transition-colors"
             >
               {copied ? (
                 <>
