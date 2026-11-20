@@ -1,0 +1,18 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schemas/server.json",
+  "name": "webintel",
+  "title": "WebIntel",
+  "description": "Enterprise website intelligence, technical reconnaissance, and clean content extraction for autonomous AI agents.",
+  "repository": {
+    "url": "https://github.com/kevinthomas9898/webintel-api",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "url": "https://webintel-apis.vercel.app/api/mcp",
+      "transport": {
+        "type": "streamable-http"
+      }
+    }
+  ]
+}
