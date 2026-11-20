@@ -23,12 +23,14 @@ Protocol:     MCP 2024-11-05 (JSON-RPC 2.0)
 Auth:         Public Evaluation (None required) / Bearer API Key
 ```
 
-### 8 Production MCP Tools
+### 10 Production MCP Tools
 
 | Tool | Capability | Typical Latency |
 |---|---|---|
 | `webintel_scan` | Full 360° company reconnaissance (tech stack, contacts, social links, business profile) | 1.5s - 3.5s |
 | `webintel_dns_intel` | DNS records, corporate mail provider (Google Workspace vs M365), nameservers, SPF | 150ms - 350ms |
+| `webintel_ssl_cert` | SSL/TLS certificate audit, issuer, countdown to expiration (<30d alert), and SANs mapping | 100ms - 300ms |
+| `webintel_contact_finder` | Targeted business email addresses, telephone numbers, contact page & social profiles | 400ms - 1.5s |
 | `webintel_tech_detect` | Fast 65+ technology stack detection across frameworks, CMS, analytics, payments | 500ms - 1.2s |
 | `webintel_markdown` | Token-optimized, noise-free Markdown extraction stripped of navbars and cookie banners | 600ms - 1.8s |
 | `webintel_seo_meta` | Open Graph social cards, Twitter cards, and parsed Schema.org JSON-LD entities | 500ms - 1.5s |

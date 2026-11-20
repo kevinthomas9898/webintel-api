@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import dns from "node:dns/promises";
+import tls from "node:tls";
 import { URL } from "node:url";
 import * as cheerio from "cheerio";
 import { safeFetch, SecurityError, validateAndResolveUrl } from "@/lib/security/ssrf";
@@ -9,7 +10,7 @@ import { extractBusinessIntel } from "@/lib/extractor/business-intel";
 import { convertHtmlToMarkdown } from "@/lib/extractor/markdown-converter";
 import { verifyAgentMonetization, DEFAULT_COST_PER_SCAN_USD } from "@/lib/monetization/gateway";
 
-// ─── TDQS 5/5 Model Context Protocol (MCP) Tool Registry ──────────────────────
+// ─── 10-Tool TDQS 5.0 High-Earning MCP Registry ─────────────────────────────
 
 const MCP_TOOLS = [
   {
@@ -26,18 +27,20 @@ Extract company name, meta description, verified headings (H1/H2), detected tech
 ### When NOT to Use
 - Do NOT use if you only need the technology stack; use \`webintel_tech_detect\` instead for 3x faster execution and lower payload size.
 - Do NOT use if you only need clean webpage text for LLM summarization or RAG; use \`webintel_markdown\` instead.
+- Do NOT use if you only need corporate emails and sales channels; use \`webintel_contact_finder\` instead.
 - Do NOT use if you only need SEO tags or Open Graph metadata; use \`webintel_seo_meta\` instead.
 - Do NOT use if you only need DNS, MX mail host, or domain records; use \`webintel_dns_intel\` instead.
+- Do NOT use if you need SSL certificate validity and expiration; use \`webintel_ssl_cert\` instead.
 
 ### Disambiguation
-Unlike \`webintel_tech_detect\` (which returns only detected software libraries) or \`webintel_markdown\` (which returns raw text), \`webintel_scan\` is the full multi-dimensional dossier tool combining business metadata, verified communication channels, and architecture insights.
+Unlike \`webintel_tech_detect\` (which returns only detected software libraries), \`webintel_contact_finder\` (which returns only communication vectors), or \`webintel_markdown\` (which returns raw text), \`webintel_scan\` is the full multi-dimensional dossier tool combining business metadata, verified communication channels, and architecture insights into a single payload.
 
 ### Behavior & Performance
 - Side Effects: None. Performs strictly read-only HTTP GET requests.
 - Idempotency: Yes. Successive calls with identical URLs return consistent data.
 - SSRF Guard: Hardened with DNS pre-resolution; private subnets (RFC 1918, RFC 6598, loopback, link-local, cloud metadata 169.254.169.254) are rejected immediately.
 - JavaScript Execution: Static HTML parsing only; client-side single-page applications without server-side rendering are parsed from initial HTML payload.
-- Latency: Typically 1.0 to 4.5 seconds depending on target server responsiveness. The optional \`deepScan\` flag will follow same-origin contact/about links with an additional 2-4 seconds latency.`,
+- Latency: Typically 1.0 to 3.5 seconds depending on target server responsiveness. The optional \`deepScan\` flag will follow same-origin contact/about links with an additional 2-4 seconds latency.`,
     inputSchema: {
       type: "object",
       properties: {
@@ -61,8 +64,208 @@ Unlike \`webintel_tech_detect\` (which returns only detected software libraries)
       required: ["url"],
       additionalProperties: false,
     },
+    outputSchema: {
+      type: "object",
+      properties: {
+        website: { type: "string" },
+        companyName: { type: "string" },
+        description: { type: "string" },
+        headings: { type: "array", items: { type: "string" } },
+        technologies: { type: "array", items: { type: "object" } },
+        emails: { type: "array", items: { type: "string" } },
+        phones: { type: "array", items: { type: "string" } },
+        socialLinks: { type: "object" },
+        confidence: { type: "number" },
+      },
+      required: ["website", "companyName", "technologies", "emails"],
+    },
     annotations: {
-      title: "Full Website Intelligence Scan",
+      title: "WebIntel: Full Website Intelligence Scan",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  },
+  {
+    name: "webintel_dns_intel",
+    description: `Query public DNS records to identify enterprise mail providers, authoritative nameservers, SPF/security verifications, and hosting IP addresses.
+
+### Purpose
+Resolve DNS records for any domain: A (IPv4), AAAA (IPv6), MX (Mail Exchange), NS (Authoritative Name Servers), and TXT records. Automatically classifies corporate email infrastructure (Google Workspace, Microsoft 365, Proton, Zoho, iCloud), cloud DNS providers (Cloudflare, AWS Route 53, Google Cloud DNS), and audits SPF/DMARC and SaaS domain verifications (Stripe, Atlassian, Google, Apple, Facebook).
+
+### When to Use
+- B2B lead enrichment: Discover if a prospect uses Google Workspace vs. Microsoft 365 for business communications.
+- Domain security & deliverability auditing: Verify SPF records, DMARC alignment, and mail gateway protection.
+- Infrastructure reconnaissance: Identify authoritative nameservers (Cloudflare, Route 53) and IP addresses without making HTTP requests.
+
+### When NOT to Use
+- Do NOT use to inspect webpage HTML, headings, or on-page text; use \`webintel_markdown\` or \`webintel_scan\` instead.
+- Do NOT use to inspect HTTP response headers; use \`webintel_headers\` instead.
+- Do NOT use to audit SSL/TLS certificates and expiration dates; use \`webintel_ssl_cert\` instead.
+- Do NOT use to detect client-side JavaScript frameworks; use \`webintel_tech_detect\` instead.
+
+### Disambiguation
+Unlike HTTP-based tools that require fetching and rendering web pages, \`webintel_dns_intel\` operates purely through low-latency UDP/TCP DNS queries directly against authoritative nameservers. It works even if the website's HTTP server is down or protected by Cloudflare bot walls.
+
+### Behavior & Performance
+- Side Effects: None. Read-only DNS lookups.
+- Idempotency: Yes.
+- SSRF Guard: Queries public domain names; internal/localhost hostnames are blocked.
+- Latency: Extremely fast (typically 50ms to 350ms).`,
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: {
+          type: "string",
+          format: "uri",
+          pattern: "^https?://.+",
+          minLength: 8,
+          maxLength: 2048,
+          description:
+            "The domain or website URL to query DNS intelligence for (e.g. 'https://stripe.com' or 'https://github.com').",
+          examples: ["https://stripe.com", "https://microsoft.com", "https://linear.app"],
+        },
+      },
+      required: ["url"],
+      additionalProperties: false,
+    },
+    outputSchema: {
+      type: "object",
+      properties: {
+        domain: { type: "string" },
+        emailProvider: { type: "string" },
+        dnsProvider: { type: "string" },
+        security: { type: "object" },
+        records: { type: "object" },
+      },
+      required: ["domain", "emailProvider", "dnsProvider"],
+    },
+    annotations: {
+      title: "WebIntel: Domain DNS & Email Intelligence",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  },
+  {
+    name: "webintel_ssl_cert",
+    description: `Audit SSL/TLS certificate configuration, verify certificate authorities, extract Subject Alternative Names (SANs), and check expiration dates.
+
+### Purpose
+Establish a direct TLS handshake with the target host on port 443 to extract certificate details: issuing Certificate Authority (Let's Encrypt, DigiCert, Cloudflare, Sectigo), validity period (validFrom and validTo), days remaining until expiration, warning status for impending expiration (< 30 days), Subject Alternative Names (SANs) for discovering associated domain properties, negotiated TLS protocol version (TLSv1.2, TLSv1.3), and cipher suite.
+
+### When to Use
+- DevSecOps & infrastructure monitoring: Alert on certificates nearing expiration before outages occur.
+- Corporate reconnaissance: Inspect Subject Alternative Names (SANs) to map out hidden subdomains, internal staging URLs, and company brand domains.
+- Compliance verification: Verify that modern TLS protocols (TLSv1.2 or TLSv1.3) and strong cipher suites are enforced.
+
+### When NOT to Use
+- Do NOT use for HTTP response header auditing; use \`webintel_headers\` instead.
+- Do NOT use for DNS or MX mail provider checks; use \`webintel_dns_intel\` instead.
+- Do NOT use to inspect webpage content; use \`webintel_markdown\` instead.
+
+### Disambiguation
+Unlike \`webintel_headers\` (which inspects HTTP application layer headers like HSTS and CSP), \`webintel_ssl_cert\` operates directly at the transport layer (TLS socket level), inspecting the cryptographic X.509 certificate exchange.
+
+### Behavior & Performance
+- Side Effects: None. Read-only TLS handshake without making HTTP requests.
+- Idempotency: Yes.
+- SSRF Guard: Validates hostnames against private and internal network IP ranges.
+- Latency: Fast (typically 80ms to 400ms).`,
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: {
+          type: "string",
+          format: "uri",
+          pattern: "^https?://.+",
+          minLength: 8,
+          maxLength: 2048,
+          description:
+            "The domain or website URL to inspect SSL/TLS certificate parameters for (e.g. 'https://stripe.com').",
+          examples: ["https://stripe.com", "https://github.com", "https://cloudflare.com"],
+        },
+      },
+      required: ["url"],
+      additionalProperties: false,
+    },
+    outputSchema: {
+      type: "object",
+      properties: {
+        host: { type: "string" },
+        issuer: { type: "string" },
+        validTo: { type: "string" },
+        daysRemaining: { type: "number" },
+        isExpiringSoon: { type: "boolean" },
+        sans: { type: "array", items: { type: "string" } },
+        protocol: { type: "string" },
+      },
+      required: ["host", "issuer", "validTo", "daysRemaining", "isExpiringSoon"],
+    },
+    annotations: {
+      title: "WebIntel: SSL & TLS Certificate Audit",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  },
+  {
+    name: "webintel_contact_finder",
+    description: `Extract verified public business email addresses, telephone numbers, contact page URLs, and official social media profiles from a website.
+
+### Purpose
+Surgically scour website HTML, mailto links, tel anchors, footer profiles, and de-obfuscate protected email patterns (e.g., 'name [at] domain [dot] com') to yield verified commercial contact channels. Maps official company social accounts (LinkedIn company/profile, Twitter/X, GitHub, YouTube, Facebook, Instagram, Discord) and pinpoints dedicated support and contact routing URLs.
+
+### When to Use
+- B2B outbound sales automation, lead generation, and CRM enrichment (enriching prospect domains with direct outreach channels).
+- Customer support routing: Locating dedicated helpdesk forms and support emails without navigating complex menu systems.
+
+### When NOT to Use
+- Do NOT use if you need a comprehensive technical and architectural dossier; use \`webintel_scan\` instead.
+- Do NOT use if you need to detect frameworks or CMS stacks; use \`webintel_tech_detect\` instead.
+- Do NOT use if you need raw page Markdown; use \`webintel_markdown\` instead.
+
+### Disambiguation
+While \`webintel_scan\` includes contact info within a massive technical dossier, \`webintel_contact_finder\` is dedicated purely to contact extraction, filtering placeholder/sample emails and returning clean, deduplicated outreach endpoints in a lightweight schema.
+
+### Behavior & Performance
+- Side Effects: None. Read-only HTTP GET.
+- Idempotency: Yes.
+- Email Hygiene: Discards common placeholder emails (user@example.com, test@test.com) and static media assets (.png, .css).
+- Latency: Fast (typically 500ms to 2.0s).`,
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: {
+          type: "string",
+          format: "uri",
+          pattern: "^https?://.+",
+          minLength: 8,
+          maxLength: 2048,
+          description:
+            "The website URL to harvest business contacts and communication channels from (e.g. 'https://linear.app').",
+          examples: ["https://linear.app", "https://stripe.com", "https://openai.com"],
+        },
+      },
+      required: ["url"],
+      additionalProperties: false,
+    },
+    outputSchema: {
+      type: "object",
+      properties: {
+        website: { type: "string" },
+        emails: { type: "array", items: { type: "string" } },
+        phones: { type: "array", items: { type: "string" } },
+        socialLinks: { type: "object" },
+        contactPage: { type: "string" },
+      },
+      required: ["website", "emails", "socialLinks"],
+    },
+    annotations: {
+      title: "WebIntel: Business Contact & Lead Harvester",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -81,7 +284,7 @@ Inspect HTTP response headers, DOM elements, script sources, and meta generators
 - Performing competitive tech stack benchmarking or qualifying B2B sales leads based on stack criteria (e.g., finding Shopify stores using Klaviyo or Next.js sites on Vercel).
 
 ### When NOT to Use
-- Do NOT use if you need contact emails, social links, or company description; use \`webintel_scan\` instead.
+- Do NOT use if you need contact emails, social links, or company description; use \`webintel_contact_finder\` or \`webintel_scan\` instead.
 - Do NOT use to inspect DNS records or corporate email hosting; use \`webintel_dns_intel\` instead.
 - Do NOT use if you need HTTP security header compliance; use \`webintel_headers\` instead.
 
@@ -93,7 +296,7 @@ Compared to \`webintel_scan\`, this tool bypasses contact extraction, link graph
 - Idempotency: Yes.
 - SSRF Guard: Validates hostname against private and reserved IP address spaces.
 - Latency: Fast (typically 400ms to 1.8s).
-- Returns: Array of detected technologies with name, category, confidence score, and detection vector (e.g., 'Header: x-vercel-id' or 'Script URL: js.stripe.com').`,
+- Returns: Array of detected technologies with name, category, confidence score, and detection vector.`,
     inputSchema: {
       type: "object",
       properties: {
@@ -111,8 +314,17 @@ Compared to \`webintel_scan\`, this tool bypasses contact extraction, link graph
       required: ["url"],
       additionalProperties: false,
     },
+    outputSchema: {
+      type: "object",
+      properties: {
+        website: { type: "string" },
+        technologiesFound: { type: "number" },
+        technologies: { type: "array", items: { type: "object" } },
+      },
+      required: ["website", "technologiesFound", "technologies"],
+    },
     annotations: {
-      title: "Technology Stack Detection",
+      title: "WebIntel: Technology Stack Detection",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -160,8 +372,17 @@ Unlike standard web scrapers that return messy raw HTML or unstructured text dum
       required: ["url"],
       additionalProperties: false,
     },
+    outputSchema: {
+      type: "object",
+      properties: {
+        url: { type: "string" },
+        characterCount: { type: "number" },
+        markdown: { type: "string" },
+      },
+      required: ["url", "characterCount", "markdown"],
+    },
     annotations: {
-      title: "Web Page to Clean Markdown",
+      title: "WebIntel: Web Page to Markdown",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -210,8 +431,19 @@ This tool isolates the semantic metadata layer of a webpage. Where \`webintel_sc
       required: ["url"],
       additionalProperties: false,
     },
+    outputSchema: {
+      type: "object",
+      properties: {
+        url: { type: "string" },
+        title: { type: "string" },
+        description: { type: "string" },
+        openGraph: { type: "object" },
+        twitter: { type: "object" },
+      },
+      required: ["url"],
+    },
     annotations: {
-      title: "SEO & Social Metadata Extraction",
+      title: "WebIntel: SEO & Metadata Extraction",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -231,7 +463,7 @@ Parse all HTML \`<a href>\` anchor elements on a page, resolve relative paths to
 - Planning crawler traversal paths or discovering sitemap boundaries.
 
 ### When NOT to Use
-- Do NOT use if you only need corporate email addresses or phone numbers; use \`webintel_scan\` instead.
+- Do NOT use if you only need corporate email addresses or phone numbers; use \`webintel_contact_finder\` instead.
 - Do NOT use if you need the page's written content; use \`webintel_markdown\` instead.
 - Do NOT use if you are looking for XML sitemap URLs; use \`webintel_robots\` instead.
 
@@ -260,8 +492,19 @@ Unlike general scrapers that return unorganized raw href strings, \`webintel_lin
       required: ["url"],
       additionalProperties: false,
     },
+    outputSchema: {
+      type: "object",
+      properties: {
+        website: { type: "string" },
+        internalLinks: { type: "array", items: { type: "string" } },
+        externalLinks: { type: "array", items: { type: "string" } },
+        socialLinks: { type: "object" },
+        counts: { type: "object" },
+      },
+      required: ["website", "internalLinks", "externalLinks", "counts"],
+    },
     annotations: {
-      title: "Link Extraction & Analysis",
+      title: "WebIntel: Hyperlink Graph Analysis",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -283,6 +526,7 @@ Retrieve the exact HTTP response headers returned by a web server and perform an
 ### When NOT to Use
 - Do NOT use if you need page content or SEO metadata; use \`webintel_markdown\` or \`webintel_seo_meta\` instead.
 - Do NOT use if you need DNS record validation; use \`webintel_dns_intel\` instead.
+- Do NOT use if you need SSL/TLS certificate details; use \`webintel_ssl_cert\` instead.
 - Do NOT use to find technology libraries embedded in client JavaScript; use \`webintel_tech_detect\` instead.
 
 ### Disambiguation
@@ -310,8 +554,18 @@ This tool does not parse HTML. It operates strictly at the HTTP protocol layer, 
       required: ["url"],
       additionalProperties: false,
     },
+    outputSchema: {
+      type: "object",
+      properties: {
+        url: { type: "string" },
+        httpStatus: { type: "number" },
+        security: { type: "object" },
+        headers: { type: "object" },
+      },
+      required: ["url", "httpStatus", "security", "headers"],
+    },
     annotations: {
-      title: "HTTP Headers & Security Analysis",
+      title: "WebIntel: HTTP Security Header Audit",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -360,62 +614,22 @@ This tool does not scrape the requested URL itself; instead, it targets the root
       required: ["url"],
       additionalProperties: false,
     },
+    outputSchema: {
+      type: "object",
+      properties: {
+        url: { type: "string" },
+        robotsFound: { type: "boolean" },
+        allowed: { type: "boolean" },
+        sitemaps: { type: "array", items: { type: "string" } },
+      },
+      required: ["url", "robotsFound", "allowed"],
+    },
     annotations: {
-      title: "Robots.txt Parser & Permission Check",
+      title: "WebIntel: Robots.txt & Sitemap Locator",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
       openWorldHint: false,
-    },
-  },
-  {
-    name: "webintel_dns_intel",
-    description: `Query public DNS records to identify enterprise mail providers, authoritative nameservers, SPF/security verifications, and hosting IP addresses.
-
-### Purpose
-Resolve DNS records for any domain: A (IPv4), AAAA (IPv6), MX (Mail Exchange), NS (Authoritative Name Servers), and TXT records. Automatically classifies corporate email infrastructure (Google Workspace, Microsoft 365, Proton, Zoho, iCloud), cloud DNS providers (Cloudflare, AWS Route 53, Google Cloud DNS), and audits SPF/DMARC and SaaS domain verifications (Stripe, Atlassian, Google, Apple, Facebook).
-
-### When to Use
-- B2B lead enrichment: Discover if a prospect uses Google Workspace vs. Microsoft 365 for business communications.
-- Domain security & deliverability auditing: Verify SPF records, DMARC alignment, and mail gateway protection.
-- Infrastructure reconnaissance: Identify authoritative nameservers (Cloudflare, Route 53) and IP addresses without making HTTP requests.
-
-### When NOT to Use
-- Do NOT use to inspect webpage HTML, headings, or on-page text; use \`webintel_markdown\` or \`webintel_scan\` instead.
-- Do NOT use to inspect HTTP response headers; use \`webintel_headers\` instead.
-- Do NOT use to detect client-side JavaScript frameworks; use \`webintel_tech_detect\` instead.
-
-### Disambiguation
-Unlike HTTP-based tools that require fetching and rendering web pages, \`webintel_dns_intel\` operates purely through low-latency UDP/TCP DNS queries directly against authoritative nameservers. It works even if the website's HTTP server is down or protected by Cloudflare bot walls.
-
-### Behavior & Performance
-- Side Effects: None. Read-only DNS lookups.
-- Idempotency: Yes.
-- SSRF Guard: Queries public domain names; internal/localhost hostnames are blocked.
-- Latency: Extremely fast (typically 50ms to 400ms).`,
-    inputSchema: {
-      type: "object",
-      properties: {
-        url: {
-          type: "string",
-          format: "uri",
-          pattern: "^https?://.+",
-          minLength: 8,
-          maxLength: 2048,
-          description:
-            "The domain or website URL to query DNS intelligence for (e.g. 'https://stripe.com' or 'https://github.com').",
-          examples: ["https://stripe.com", "https://microsoft.com", "https://linear.app"],
-        },
-      },
-      required: ["url"],
-      additionalProperties: false,
-    },
-    annotations: {
-      title: "Domain DNS & Mail Infrastructure Intelligence",
-      readOnlyHint: true,
-      destructiveHint: false,
-      idempotentHint: true,
-      openWorldHint: true,
     },
   },
 ];
@@ -458,20 +672,22 @@ export async function POST(req: NextRequest) {
         },
         serverInfo: {
           name: "WebIntel MCP Server",
-          version: "1.2.0",
+          version: "1.3.0",
         },
         instructions: [
           "WebIntel is a high-performance website intelligence and OSINT suite for AI agents.",
-          "Available tools:",
+          "Available tools (10 total):",
           "- webintel_scan: Full 360-degree company reconnaissance (tech stack, contacts, social links, business profile).",
+          "- webintel_dns_intel: Domain DNS intelligence (MX email provider detection, nameservers, SPF records).",
+          "- webintel_ssl_cert: SSL/TLS certificate audit, issuer, expiration countdown & SANs mapping.",
+          "- webintel_contact_finder: Targeted business email addresses, telephone numbers & social profiles.",
           "- webintel_tech_detect: Fast 65+ technology stack inspection across frameworks, CMS, analytics, and payments.",
           "- webintel_markdown: High-signal, noise-free Markdown conversion for token-efficient LLM reasoning and RAG.",
           "- webintel_seo_meta: SEO metadata, Open Graph preview tags, Twitter cards, and Schema.org JSON-LD.",
           "- webintel_links: Complete link graph extraction (internal, external, social channels, navigation pages).",
           "- webintel_headers: HTTP response headers with automated security posture score and A-F grading.",
           "- webintel_robots: robots.txt permission verification and XML sitemap discovery.",
-          "- webintel_dns_intel: Domain DNS intelligence (MX email provider detection, nameservers, SPF records).",
-          "All tools are read-only, idempotent, and protected by strict SSRF guards.",
+          "All tools are read-only, idempotent, and protected by multi-tier SSRF defense.",
         ].join("\n"),
       },
     });
@@ -518,6 +734,11 @@ export async function POST(req: NextRequest) {
         return await handleDnsIntel(id, toolArgs.url);
       }
 
+      // ── Tool: webintel_ssl_cert ───────────────────────────────────────────
+      if (toolName === "webintel_ssl_cert") {
+        return await handleSslCert(id, toolArgs.url);
+      }
+
       // ── Tool: webintel_robots ─────────────────────────────────────────────
       if (toolName === "webintel_robots") {
         return await handleRobots(id, toolArgs.url);
@@ -530,6 +751,20 @@ export async function POST(req: NextRequest) {
       });
 
       const $ = cheerio.load(fetchResult.body);
+
+      // ── Tool: webintel_contact_finder ─────────────────────────────────────
+      if (toolName === "webintel_contact_finder") {
+        const parsedData = parseHtml(fetchResult.body, fetchResult.finalUrl);
+        return jsonRpcResult(id, {
+          website: fetchResult.finalUrl,
+          emailsFound: parsedData.emails.length,
+          emails: parsedData.emails,
+          phones: parsedData.phones,
+          socialLinks: parsedData.socialLinks,
+          contactPage: parsedData.contactPage,
+          aboutPage: parsedData.aboutPage,
+        });
+      }
 
       // ── Tool: webintel_markdown ───────────────────────────────────────────
       if (toolName === "webintel_markdown") {
@@ -677,9 +912,9 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     name: "WebIntel MCP Server",
-    version: "1.2.0",
+    version: "1.3.0",
     description:
-      "Enterprise website intelligence, technical reconnaissance, and clean content extraction for autonomous AI agents. 8 production tools covering tech stack detection (65+ signatures), business dossier synthesis, clean Markdown extraction, SEO metadata, link graph analysis, HTTP security grading, robots.txt permission checks, and domain DNS/email intelligence.",
+      "Enterprise website intelligence, technical reconnaissance, and clean content extraction for autonomous AI agents. 10 production tools covering tech stack detection (65+ signatures), business dossier synthesis, clean Markdown extraction, SSL/TLS certificate auditing, lead contact harvesting, SEO metadata, link graph analysis, HTTP security grading, robots.txt permission checks, and domain DNS/email intelligence.",
     protocolVersion: "2024-11-05",
     tdqsRating: "A (5.0/5.0 Target)",
     toolCount: MCP_TOOLS.length,
@@ -713,6 +948,138 @@ function jsonRpcResult(id: string | number, data: Record<string, unknown>) {
     result: {
       content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
     },
+  });
+}
+
+// ─── Tool Handler: webintel_ssl_cert ─────────────────────────────────────────
+
+async function handleSslCert(id: string | number, urlStr: string) {
+  let hostname = "";
+  try {
+    const parsed = new URL(urlStr.startsWith("http") ? urlStr : `https://${urlStr}`);
+    hostname = parsed.hostname;
+  } catch {
+    return NextResponse.json({
+      jsonrpc: "2.0",
+      id,
+      result: {
+        content: [{ type: "text", text: `Invalid domain or URL: "${urlStr}"` }],
+        isError: true,
+      },
+    });
+  }
+
+  // Pre-validate hostname against SSRF
+  try {
+    await validateAndResolveUrl(`https://${hostname}`);
+  } catch (err: unknown) {
+    const msg = err instanceof SecurityError ? err.message : String(err);
+    return NextResponse.json({
+      jsonrpc: "2.0",
+      id,
+      result: {
+        content: [{ type: "text", text: `SSRF validation failed for ${hostname}: ${msg}` }],
+        isError: true,
+      },
+    });
+  }
+
+  return new Promise<NextResponse>((resolve) => {
+    const socket = tls.connect(
+      443,
+      hostname,
+      { servername: hostname, timeout: 5000 },
+      () => {
+        try {
+          const cert = socket.getPeerCertificate();
+          const protocol = socket.getProtocol() || "TLS";
+          const cipher = socket.getCipher();
+          socket.end();
+
+          if (!cert || Object.keys(cert).length === 0) {
+            resolve(
+              jsonRpcResult(id, {
+                host: hostname,
+                error: "No SSL certificate found or handshake failed.",
+              })
+            );
+            return;
+          }
+
+          const validToDate = new Date(cert.valid_to);
+          const now = new Date();
+          const msRemaining = validToDate.getTime() - now.getTime();
+          const daysRemaining = Math.max(0, Math.floor(msRemaining / (1000 * 60 * 60 * 24)));
+          const isExpiringSoon = daysRemaining <= 30;
+
+          // Parse SANs
+          const sans = cert.subjectaltname
+            ? cert.subjectaltname
+                .split(",")
+                .map((s) => s.trim().replace(/^DNS:/i, ""))
+                .filter(Boolean)
+            : [];
+
+          resolve(
+            jsonRpcResult(id, {
+              host: hostname,
+              issuer: cert.issuer?.O || cert.issuer?.CN || "Unknown Authority",
+              subject: cert.subject?.CN || hostname,
+              validFrom: cert.valid_from,
+              validTo: cert.valid_to,
+              daysRemaining,
+              isExpiringSoon,
+              expiryWarning: isExpiringSoon
+                ? `WARNING: Certificate expires in ${daysRemaining} days!`
+                : null,
+              protocol,
+              cipherName: cipher?.name || "Unknown",
+              sansCount: sans.length,
+              sans: sans.slice(0, 20),
+            })
+          );
+        } catch (err: unknown) {
+          socket.destroy();
+          resolve(
+            NextResponse.json({
+              jsonrpc: "2.0",
+              id,
+              result: {
+                content: [{ type: "text", text: `TLS error for ${hostname}: ${String(err)}` }],
+                isError: true,
+              },
+            })
+          );
+        }
+      }
+    );
+
+    socket.on("timeout", () => {
+      socket.destroy();
+      resolve(
+        NextResponse.json({
+          jsonrpc: "2.0",
+          id,
+          result: {
+            content: [{ type: "text", text: `TLS connection timed out for ${hostname}` }],
+            isError: true,
+          },
+        })
+      );
+    });
+
+    socket.on("error", (err) => {
+      resolve(
+        NextResponse.json({
+          jsonrpc: "2.0",
+          id,
+          result: {
+            content: [{ type: "text", text: `TLS handshake error for ${hostname}: ${err.message}` }],
+            isError: true,
+          },
+        })
+      );
+    });
   });
 }
 
